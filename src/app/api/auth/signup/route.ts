@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import { createServerClient } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,7 +21,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Sign up user
+    // Sign up user using client (for auth)
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
@@ -45,8 +46,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create restaurant profile (RLS is disabled for development)
-    const { data: restaurant, error: profileError } = await supabase
+    // Create restaurant profile using server client
+    const serverSupabase = createServerClient()
+    const { data: restaurant, error: profileError } = await serverSupabase
       .from('restaurants')
       .insert([
         {

@@ -27,25 +27,38 @@ export default function SignupPage() {
     }
 
     try {
-      // First, sign up the user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      // Use the API route to sign up the user and create restaurant record
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          restaurantName,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error || 'Failed to create account')
+        return
+      }
+
+      // After successful signup, sign in the user
+      const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
-      if (authError) {
-        // Handle rate limiting with user-friendly message
-        let errorMessage = authError.message
-        if (errorMessage.includes('For security purposes, you can only request this after')) {
-          errorMessage = 'Please wait a moment before trying again.'
-        }
-        setError(errorMessage)
+      if (signInError) {
+        setError('Account created but failed to sign in. Please try logging in.')
         return
       }
 
-      if (authData.user) {
-        router.push('/dashboard')
-      }
+      router.push('/dashboard')
     } catch (err) {
       console.error('Signup error:', err)
       setError('An unexpected error occurred')
@@ -73,7 +86,7 @@ export default function SignupPage() {
         <div className="max-w-md text-center">
           <div className="w-24 h-24 bg-black rounded-3xl flex items-center justify-center mx-auto mb-8">
             <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
           </div>
           <h2 className="text-3xl font-bold text-black mb-4">

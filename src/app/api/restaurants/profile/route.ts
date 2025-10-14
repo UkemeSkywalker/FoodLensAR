@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAuthenticatedUserFromCookies } from '@/lib/auth'
-import { supabase } from '@/lib/supabase'
+import { getAuthenticatedUserFromCookies, getAuthenticatedUser } from '@/lib/auth'
+import { createServerClient } from '@/lib/supabase'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const user = await getAuthenticatedUserFromCookies()
+    // Try cookie-based auth first
+    let user = await getAuthenticatedUserFromCookies()
+    
+    // If cookie auth fails, try header-based auth
+    if (!user) {
+      user = await getAuthenticatedUser(request)
+    }
     
     if (!user) {
       return NextResponse.json(
@@ -12,6 +18,8 @@ export async function GET() {
         { status: 401 }
       )
     }
+
+    const supabase = createServerClient()
 
     // Get restaurant profile
     const { data: restaurant, error } = await supabase
@@ -21,6 +29,7 @@ export async function GET() {
       .single()
 
     if (error) {
+      console.error('Restaurant query error:', error)
       return NextResponse.json(
         { error: 'Restaurant profile not found' },
         { status: 404 }
@@ -58,6 +67,8 @@ export async function PUT(request: NextRequest) {
       )
     }
 
+    const supabase = createServerClient()
+
     // Update restaurant profile
     const { data: restaurant, error } = await supabase
       .from('restaurants')
@@ -67,6 +78,7 @@ export async function PUT(request: NextRequest) {
       .single()
 
     if (error) {
+      console.error('Restaurant update error:', error)
       return NextResponse.json(
         { error: 'Failed to update restaurant profile' },
         { status: 500 }
