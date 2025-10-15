@@ -1,6 +1,7 @@
 # Implementation Plan
 
 - [x] 1. Set up project structure and development environment
+
   - Initialize Next.js project with TypeScript and Tailwind CSS
   - Configure Docker for containerization
   - Set up development environment with hot reloading
@@ -10,6 +11,7 @@
   - _Requirements: 7.1, 7.2, 7.3, 7.4_
 
 - [x] 2. Configure Supabase integration and authentication
+
   - Set up Supabase project and configure environment variables
   - Implement Supabase client configuration for frontend and backend
   - Create database schema with restaurants and menu_items tables
@@ -19,6 +21,7 @@
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 6.1_
 
 - [x] 3. Implement authentication system with UI
+
   - Create signup/login pages with form validation and styling
   - Implement Supabase Auth integration for user registration
   - Build authentication middleware for API route protection
@@ -29,6 +32,7 @@
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5_
 
 - [x] 4. Build restaurant dashboard and menu management UI
+
   - Create restaurant dashboard layout and navigation with responsive design
   - Implement menu item creation form with validation and visual feedback
   - Build menu item list view with edit/delete functionality and loading states
@@ -39,6 +43,7 @@
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
 
 - [x] 5. Integrate AWS S3 for image storage infrastructure
+
   - Create and configure an AWS S3 bucket, CORS and IAM permissions, using terraform in a terraform folder
   - Implement S3 upload utilities with proper error handling
   - Create signed URL generation for secure image access
@@ -46,6 +51,7 @@
   - _Requirements: 3.4, 6.3_
 
 - [x] 6. Implement Google Nano Banana API integration with UI updates
+
   - Set up Google Nano Banana API client configuration
   - Create image generation service with controlled prompts
   - Implement automatic image generation pipeline for menu items
@@ -58,7 +64,8 @@
   - Test complete image generation pipeline with visual feedback
   - _Requirements: 3.1, 3.2, 3.5, 3.6_
 
-- [ ] 7. Build customer-facing menu display with interactive elements
+- [x] 7. Build customer-facing menu display with interactive elements
+
   - Create public menu view page with restaurant routing and attractive layout
   - Implement MenuItemCard component with image display and hover effects
   - Build responsive grid layout for menu items with loading skeletons
@@ -68,7 +75,18 @@
   - Test complete customer menu browsing experience
   - _Requirements: 3.6, 7.4_
 
-- [ ] 8. Set up AWS Strands Agent infrastructure with testing
+- [ ] 8. Implement QR code generation for customer menu access
+
+  - Add QR code URL field to restaurants database table
+  - Create QR code generation API endpoint using qrcode library
+  - Implement QR code image storage in S3 with proper naming
+  - Add QR code generation button and display in restaurant dashboard
+  - Create downloadable/printable QR code functionality
+  - Test QR code generation and customer menu access flow
+  - _Requirements: 2.5, 3.6, 7.4_
+
+- [ ] 9. Set up AWS Strands Agent infrastructure with testing
+
   - Configure AWS Strands Agent with custom tools
   - Implement GetDishInfo tool for Supabase integration
   - Create NutritionLookup tool with USDA API integration
@@ -78,7 +96,8 @@
   - Test each agent tool individually with sample data
   - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
 
-- [ ] 9. Implement AI Food Advisor API integration with UI testing
+- [ ] 10. Implement AI Food Advisor API integration with UI testing
+
   - Create API route for handling AI queries
   - Implement request forwarding to AWS Strands Agent
   - Build response processing and formatting logic
@@ -88,7 +107,8 @@
   - Test AI integration with various query types and visual feedback
   - _Requirements: 4.1, 4.6_
 
-- [ ] 10. Integrate ElevenLabs TTS with audio controls
+- [ ] 11. Integrate ElevenLabs TTS with audio controls
+
   - Set up ElevenLabs API client and authentication
   - Implement text-to-speech conversion service
   - Create audio file handling and temporary storage
@@ -98,7 +118,8 @@
   - Test voice synthesis with sample text and playback controls
   - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-- [ ] 11. Build interactive AI chat interface
+- [ ] 12. Build interactive AI chat interface
+
   - Create chat UI component with message history and modern design
   - Implement real-time query submission and response display with animations
   - Add voice playback controls with audio player and waveform visualization
@@ -108,7 +129,8 @@
   - Test complete chat experience with AI responses and voice playback
   - _Requirements: 4.1, 4.6, 5.4_
 
-- [ ] 12. Implement comprehensive error handling with user feedback
+- [ ] 13. Implement comprehensive error handling with user feedback
+
   - Add global error boundary for React components with user-friendly error pages
   - Implement API error handling with user-friendly messages and toast notifications
   - Create retry mechanisms for external service failures with visual indicators
@@ -118,7 +140,8 @@
   - Test error handling across all user workflows with visual feedback
   - _Requirements: 6.4, 8.2, 8.3_
 
-- [ ] 13. Add security measures and data protection with validation
+- [ ] 14. Add security measures and data protection with validation
+
   - Implement input sanitization for all user inputs
   - Add CORS configuration for API endpoints
   - Create Content Security Policy headers
@@ -128,7 +151,8 @@
   - Test security measures and validate protection mechanisms
   - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
 
-- [ ] 14. Configure deployment and containerization with health checks
+- [ ] 15. Configure deployment and containerization with health checks
+
   - Create optimized Dockerfile for production builds
   - Set up AWS App Runner configuration
   - Configure environment variables and secrets management
@@ -138,7 +162,8 @@
   - Test deployment pipeline and health monitoring
   - _Requirements: 8.1, 8.4, 8.5_
 
-- [ ] 15. Integrate monitoring and analytics with dashboards
+- [ ] 16. Integrate monitoring and analytics with dashboards
+
   - Add Sentry for error tracking and performance monitoring
   - Implement CloudWatch metrics and alarms
   - Create application health monitoring endpoints with visual dashboard
@@ -148,7 +173,7 @@
   - Test monitoring systems and validate alert mechanisms
   - _Requirements: 8.5_
 
-- [ ] 16. Final integration and deployment preparation with testing
+- [ ] 17. Final integration and deployment preparation with testing
   - Integrate all components and test complete workflows through UI
   - Optimize performance and loading times with visual performance metrics
   - Validate all security measures are in place through testing interface

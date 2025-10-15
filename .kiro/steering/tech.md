@@ -20,13 +20,18 @@
 - **Google Nano Banana API** for AI image generation
 - **AWS Strands Agent** for intelligent food advisory
 - **ElevenLabs TTS** for voice synthesis
-- **AWS S3** for image storage
+- **AWS S3** for image storage (includes QR code images)
 
 ## Development Tools
 - **ESLint** for code linting
 - **TypeScript 5** for type safety
 - **Docker** for containerization
 - **Hot reloading** enabled for rapid development
+
+## QR Code Generation
+- **qrcode** npm package for server-side QR code generation
+- QR codes stored as PNG images in S3
+- Customer menu URLs encoded in QR codes for easy scanning
 
 ## Common Commands
 

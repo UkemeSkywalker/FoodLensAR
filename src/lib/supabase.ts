@@ -19,26 +19,17 @@ export const createServerClient = () => {
   return createClient(supabaseUrl, serviceRoleKey)
 }
 
+// Client for public server-side operations (uses anon key for public access)
+export const createPublicClient = () => {
+  return createClient(supabaseUrl, supabaseAnonKey)
+}
+
 // Client for server-side operations with user context (uses anon key + cookies)
 export const createServerClientWithAuth = async () => {
-  const { cookies } = await import('next/headers')
-  const cookieStore = await cookies()
-  
   return createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
-      getSession: async () => {
-        // Try to get session from cookies
-        const accessToken = cookieStore.get('sb-access-token')?.value
-        const refreshToken = cookieStore.get('sb-refresh-token')?.value
-        
-        if (!accessToken) {
-          return { data: { session: null }, error: null }
-        }
-        
-        // Create a temporary client to validate the session
-        const tempClient = createClient(supabaseUrl, supabaseAnonKey)
-        return await tempClient.auth.getSession()
-      }
+      persistSession: false,
+      autoRefreshToken: false
     }
   })
 }
