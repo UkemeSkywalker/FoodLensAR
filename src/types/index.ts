@@ -15,6 +15,7 @@ export interface MenuItem {
   price: number;
   ingredients?: string[];
   description?: string;
+  cuisine?: string;
   image_url?: string;
   image_generation_status: 'pending' | 'generating' | 'completed' | 'failed';
   created_at: string;

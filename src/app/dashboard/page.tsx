@@ -7,6 +7,8 @@ import {
   MenuItemCard,
   MenuItemForm,
   EmptyState,
+  ToastContainer,
+  toast,
 } from "@/components";
 import { supabase } from "@/lib/supabase";
 import { Restaurant, MenuItem } from "@/types";
@@ -22,6 +24,7 @@ export default function DashboardPage() {
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
+  const [generatingImageId, setGeneratingImageId] = useState<string | null>(null);
   const [editingRestaurantName, setEditingRestaurantName] = useState(false);
   const [newRestaurantName, setNewRestaurantName] = useState('');
   const router = useRouter();
@@ -75,6 +78,8 @@ export default function DashboardPage() {
       }
 
       if (restaurant) {
+        console.log('=== Dashboard Restaurant Loaded ===');
+        console.log('Restaurant data:', restaurant);
         setRestaurant(restaurant);
       }
     } catch (err) {
@@ -144,6 +149,7 @@ export default function DashboardPage() {
           price: numericPrice,
           ingredients: formData.ingredients || [],
           description: formData.description?.trim() || null,
+          cuisine: formData.cuisine?.trim() || null,
           image_generation_status: 'pending'
         })
         .select()
@@ -156,6 +162,69 @@ export default function DashboardPage() {
       // Add new item to the beginning of the list (optimistic update)
       setMenuItems((prev) => [menuItem, ...prev]);
       setShowForm(false);
+
+      // Show success toast for menu item creation
+      toast.success('Menu item created!', 'AI image generation started automatically');
+
+      // Automatically trigger image generation for the new menu item
+      try {
+        // Update status to generating immediately
+        setMenuItems((prev) => 
+          prev.map(item => 
+            item.id === menuItem.id 
+              ? { ...item, image_generation_status: 'generating' }
+              : item
+          )
+        );
+
+        console.log('=== Automatic Image Generation Debug ===');
+        console.log('Restaurant:', restaurant);
+        console.log('Menu Item:', menuItem);
+
+        const response = await fetch(`/api/menu/${menuItem.id}/generate-image`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            restaurantId: restaurant.id
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          // Update the menu item with the generated image
+          setMenuItems(prev => 
+            prev.map(item => 
+              item.id === menuItem.id ? result.menuItem : item
+            )
+          );
+          toast.success('Image generated!', `AI created a beautiful image for ${menuItem.name}`);
+        } else {
+          // Mark as failed if generation fails
+          setMenuItems((prev) => 
+            prev.map(item => 
+              item.id === menuItem.id 
+                ? { ...item, image_generation_status: 'failed' }
+                : item
+            )
+          );
+          toast.error('Image generation failed', result.error || 'Please try generating manually');
+          console.error('Automatic image generation failed:', result.error);
+        }
+      } catch (error) {
+        // Mark as failed if there's an error
+        setMenuItems((prev) => 
+          prev.map(item => 
+            item.id === menuItem.id 
+              ? { ...item, image_generation_status: 'failed' }
+              : item
+          )
+        );
+        toast.error('Image generation error', 'Please try generating manually');
+        console.error('Error in automatic image generation:', error);
+      }
     } catch (err) {
       console.error("Error creating menu item:", err);
       alert(err instanceof Error ? err.message : "Failed to create menu item. Please try again.");
@@ -187,6 +256,7 @@ export default function DashboardPage() {
           price: numericPrice,
           ingredients: formData.ingredients || [],
           description: formData.description?.trim() || null,
+          cuisine: formData.cuisine?.trim() || null,
           updated_at: new Date().toISOString()
         })
         .eq('id', editingItem.id)
@@ -246,6 +316,49 @@ export default function DashboardPage() {
   const handleCancelForm = () => {
     setShowForm(false);
     setEditingItem(null);
+  };
+
+  const handleGenerateImage = async (itemId: string) => {
+    if (!restaurant) {
+      console.error('No restaurant found for image generation');
+      return;
+    }
+    
+    console.log('=== Manual Image Generation Debug ===');
+    console.log('Restaurant:', restaurant);
+    console.log('Item ID:', itemId);
+    
+    setGeneratingImageId(itemId);
+    try {
+      const response = await fetch(`/api/menu/${itemId}/generate-image`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          restaurantId: restaurant.id
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Update the menu item in the list with the new image
+        setMenuItems(prev => 
+          prev.map(item => 
+            item.id === itemId ? result.menuItem : item
+          )
+        );
+        toast.success('Image generated!', 'Your menu item now has a beautiful AI-generated image');
+      } else {
+        toast.error('Generation failed', result.error || 'Please try again');
+      }
+    } catch (error) {
+      console.error('Error generating image:', error);
+      toast.error('Generation error', 'Please try again');
+    } finally {
+      setGeneratingImageId(null);
+    }
   };
 
   const handleUpdateRestaurantName = async () => {
@@ -607,7 +720,9 @@ export default function DashboardPage() {
                   menuItem={menuItem}
                   onEdit={handleEditMenuItem}
                   onDelete={handleDeleteMenuItem}
+                  onGenerateImage={handleGenerateImage}
                   isDeleting={deletingItemId === menuItem.id}
+                  isGeneratingImage={generatingImageId === menuItem.id}
                 />
               ))}
             </div>
@@ -623,6 +738,9 @@ export default function DashboardPage() {
             isSubmitting={isSubmitting}
           />
         )}
+
+        {/* Toast Notifications */}
+        <ToastContainer />
       </div>
     </AuthGuard>
   );

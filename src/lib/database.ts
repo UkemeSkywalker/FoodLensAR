@@ -55,7 +55,10 @@ export const menuItemService = {
   async create(data: Omit<MenuItem, 'id' | 'created_at' | 'updated_at'>): Promise<MenuItem | null> {
     const { data: menuItem, error } = await supabase
       .from('menu_items')
-      .insert(data)
+      .insert({
+        ...data,
+        image_generation_status: 'pending' // Set initial status
+      })
       .select()
       .single()
     
@@ -65,6 +68,73 @@ export const menuItemService = {
     }
     
     return menuItem
+  },
+
+  async createWithImageGeneration(
+    data: Omit<MenuItem, 'id' | 'created_at' | 'updated_at' | 'image_url' | 'image_generation_status'>,
+    generateImage: boolean = true
+  ): Promise<MenuItem | null> {
+    // First create the menu item
+    const menuItem = await this.create({
+      ...data,
+      image_generation_status: generateImage ? 'pending' : 'completed'
+    })
+    
+    if (!menuItem || !generateImage) {
+      return menuItem
+    }
+
+    // Trigger image generation in the background
+    this.generateImageForItem(menuItem.id, menuItem.name, menuItem.description)
+      .catch(error => {
+        console.error('Background image generation failed:', error)
+      })
+    
+    return menuItem
+  },
+
+  async generateImageForItem(
+    itemId: string,
+    itemName: string,
+    description?: string,
+    cuisine?: string
+  ): Promise<void> {
+    try {
+      // Update status to generating
+      await this.update(itemId, { image_generation_status: 'generating' })
+
+      // Call the image generation API
+      const response = await fetch('/api/generate-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          itemName,
+          description,
+          cuisine,
+          menuItemId: itemId
+        })
+      })
+
+      const result = await response.json()
+
+      if (result.success && result.imageUrl) {
+        // Update with generated image
+        await this.update(itemId, {
+          image_url: result.imageUrl,
+          image_generation_status: 'completed'
+        })
+      } else {
+        // Mark as failed
+        await this.update(itemId, { image_generation_status: 'failed' })
+        console.error('Image generation failed:', result.error)
+      }
+    } catch (error) {
+      // Mark as failed
+      await this.update(itemId, { image_generation_status: 'failed' })
+      console.error('Error in image generation process:', error)
+    }
   },
 
   async getByRestaurant(restaurantId: string): Promise<MenuItem[]> {

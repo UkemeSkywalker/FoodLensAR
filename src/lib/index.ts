@@ -10,3 +10,4 @@ export {
     extractS3Key,
     validateS3Config
 } from './s3'
+export { googleNanoBananaService, type ImageGenerationResult } from './google-nano-banana'

@@ -61,3 +61,32 @@ resource "aws_iam_user_policy" "food_lens_s3_policy" {
 resource "aws_iam_access_key" "food_lens_app_key" {
   user = aws_iam_user.food_lens_app.name
 }
+
+# S3 bucket public access block configuration
+resource "aws_s3_bucket_public_access_block" "food_images_pab" {
+  bucket = aws_s3_bucket.food_images.id
+
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+}
+
+# S3 bucket policy for public read access to images
+resource "aws_s3_bucket_policy" "food_images_public_read" {
+  bucket = aws_s3_bucket.food_images.id
+  depends_on = [aws_s3_bucket_public_access_block.food_images_pab]
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "PublicReadGetObject"
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = "s3:GetObject"
+        Resource  = "${aws_s3_bucket.food_images.arn}/*"
+      }
+    ]
+  })
+}

@@ -45,12 +45,13 @@
   - Test S3 integration with basic file uploads
   - _Requirements: 3.4, 6.3_
 
-- [ ] 6. Implement Google Nano Banana API integration with UI updates
+- [x] 6. Implement Google Nano Banana API integration with UI updates
   - Set up Google Nano Banana API client configuration
   - Create image generation service with controlled prompts
   - Implement automatic image generation pipeline for menu items
   - Build retry logic and error handling for API failures
   - Integrate image generation with menu item creation workflow
+  - generated image should upload to s3 and url be updated in the database
   - Build image upload status tracking system with progress indicators
   - Add visual upload progress and status indicators in the dashboard
   - Add visual image generation status and preview in dashboard

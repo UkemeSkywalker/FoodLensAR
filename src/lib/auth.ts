@@ -55,28 +55,23 @@ export function withAuth(handler: (req: AuthenticatedRequest) => Promise<Respons
 // Alternative auth method using cookies (for browser-based requests)
 export async function getAuthenticatedUserFromCookies(): Promise<User | null> {
   try {
-    const { cookies } = await import('next/headers')
-    const cookieStore = await cookies()
+    const supabase = createServerClient()
     
-    // Log all cookies to debug
-    console.log('=== All cookies ===')
-    cookieStore.getAll().forEach(cookie => {
-      console.log(`${cookie.name}: ${cookie.value.substring(0, 50)}...`)
-    })
+    // Get the session from Supabase using cookies
+    const { data: { session }, error } = await supabase.auth.getSession()
     
-    // Look for any Supabase-related cookies
-    const allCookies = cookieStore.getAll()
-    const supabaseCookies = allCookies.filter(cookie => 
-      cookie.name.includes('supabase') || 
-      cookie.name.includes('sb-') ||
-      cookie.name.includes('auth')
-    )
+    if (error) {
+      console.error('Session error:', error)
+      return null
+    }
     
-    console.log('Supabase cookies found:', supabaseCookies.map(c => c.name))
+    if (!session?.user) {
+      console.log('No session or user found')
+      return null
+    }
     
-    // For now, return null to disable server-side auth
-    // This will force the API to rely on client-side auth
-    return null
+    console.log('Authenticated user:', session.user.email)
+    return session.user
   } catch (error) {
     console.error('Cookie auth error:', error)
     return null

@@ -15,6 +15,7 @@ export interface MenuItemFormData {
   price: string
   ingredients: string[]
   description: string
+  cuisine: string
 }
 
 export default function MenuItemForm({ menuItem, onSubmit, onCancel, isSubmitting }: MenuItemFormProps) {
@@ -22,7 +23,8 @@ export default function MenuItemForm({ menuItem, onSubmit, onCancel, isSubmittin
     name: '',
     price: '',
     ingredients: [],
-    description: ''
+    description: '',
+    cuisine: ''
   })
   const [ingredientInput, setIngredientInput] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -34,7 +36,8 @@ export default function MenuItemForm({ menuItem, onSubmit, onCancel, isSubmittin
         name: menuItem.name,
         price: menuItem.price.toString(),
         ingredients: menuItem.ingredients || [],
-        description: menuItem.description || ''
+        description: menuItem.description || '',
+        cuisine: menuItem.cuisine || ''
       })
     }
   }, [menuItem])
@@ -170,6 +173,46 @@ export default function MenuItemForm({ menuItem, onSubmit, onCancel, isSubmittin
               placeholder="Describe your dish..."
               disabled={isSubmitting}
             />
+          </div>
+
+          {/* Cuisine */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Cuisine Type
+            </label>
+            <select
+              value={formData.cuisine}
+              onChange={(e) => setFormData(prev => ({ ...prev, cuisine: e.target.value }))}
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-red-500 text-black"
+              disabled={isSubmitting}
+            >
+              <option value="">Select cuisine type (optional)</option>
+              <option value="American">American</option>
+              <option value="Italian">Italian</option>
+              <option value="Mexican">Mexican</option>
+              <option value="Chinese">Chinese</option>
+              <option value="Japanese">Japanese</option>
+              <option value="Indian">Indian</option>
+              <option value="French">French</option>
+              <option value="Thai">Thai</option>
+              <option value="Mediterranean">Mediterranean</option>
+              <option value="Greek">Greek</option>
+              <option value="Korean">Korean</option>
+              <option value="Vietnamese">Vietnamese</option>
+              <option value="Spanish">Spanish</option>
+              <option value="German">German</option>
+              <option value="British">British</option>
+              <option value="Middle Eastern">Middle Eastern</option>
+              <option value="Caribbean">Caribbean</option>
+              <option value="African">African</option>
+              <option value="Fusion">Fusion</option>
+              <option value="Vegetarian">Vegetarian</option>
+              <option value="Vegan">Vegan</option>
+              <option value="Dessert">Dessert</option>
+              <option value="Seafood">Seafood</option>
+              <option value="BBQ">BBQ</option>
+              <option value="Other">Other</option>
+            </select>
           </div>
 
           {/* Ingredients */}

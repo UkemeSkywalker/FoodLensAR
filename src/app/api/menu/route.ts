@@ -2,6 +2,58 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
 import { getAuthenticatedUserFromCookies } from '@/lib/auth'
 
+// Background image generation function
+async function triggerImageGeneration(itemId: string, itemName: string, description?: string) {
+  try {
+    // Update status to generating
+    const supabase = createServerClient()
+    await supabase
+      .from('menu_items')
+      .update({ image_generation_status: 'generating' })
+      .eq('id', itemId)
+
+    // Generate image
+    const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/generate-image`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        itemName,
+        description,
+        menuItemId: itemId
+      })
+    })
+
+    const result = await response.json()
+
+    if (result.success && result.imageUrl) {
+      // Update with generated image
+      await supabase
+        .from('menu_items')
+        .update({
+          image_url: result.imageUrl,
+          image_generation_status: 'completed'
+        })
+        .eq('id', itemId)
+    } else {
+      // Mark as failed
+      await supabase
+        .from('menu_items')
+        .update({ image_generation_status: 'failed' })
+        .eq('id', itemId)
+    }
+  } catch (error) {
+    // Mark as failed
+    const supabase = createServerClient()
+    await supabase
+      .from('menu_items')
+      .update({ image_generation_status: 'failed' })
+      .eq('id', itemId)
+    throw error
+  }
+}
+
 // GET /api/menu - Get all menu items for authenticated restaurant
 export async function GET() {
   try {
@@ -96,9 +148,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to create menu item' }, { status: 500 })
     }
 
+    // Trigger image generation in the background (don't wait for it)
+    triggerImageGeneration(menuItem.id, menuItem.name, menuItem.description)
+      .catch(error => {
+        console.error('Background image generation failed for item:', menuItem.id, error)
+      })
+
     return NextResponse.json({ 
       menuItem,
-      message: 'Menu item created successfully'
+      message: 'Menu item created successfully. Image generation started.'
     }, { status: 201 })
   } catch (error) {
     console.error('Menu POST error:', error)

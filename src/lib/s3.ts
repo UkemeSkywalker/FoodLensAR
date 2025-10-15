@@ -160,16 +160,16 @@ export async function deleteFromS3(key: string): Promise<{ success: boolean; err
 }
 
 /**
- * Generate a unique S3 key for a menu item image
- * @param restaurantId Restaurant UUID
+ * Generate a unique S3 key for a menu item image with restaurant isolation
+ * @param restaurantId Restaurant UUID for data isolation
  * @param menuItemId Menu item UUID
- * @param extension File extension (default: jpg)
+ * @param extension File extension (default: png)
  * @returns S3 key string
  */
 export function generateImageKey(
   restaurantId: string,
   menuItemId: string,
-  extension: string = 'jpg'
+  extension: string = 'png'
 ): string {
   const timestamp = Date.now();
   return `restaurants/${restaurantId}/menu-items/${menuItemId}/${timestamp}.${extension}`;
