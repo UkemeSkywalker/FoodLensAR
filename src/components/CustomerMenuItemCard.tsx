@@ -15,6 +15,28 @@ export default function CustomerMenuItemCard({ menuItem, viewMode = 'grid' }: Cu
   const [imageLoading, setImageLoading] = useState(true)
   const [isExpanded, setIsExpanded] = useState(false)
   const [showImageModal, setShowImageModal] = useState(false)
+  const [isClickDisabled, setIsClickDisabled] = useState(false)
+
+  const handleImageClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    e.preventDefault()
+    
+    // Prevent rapid clicking
+    if (isClickDisabled) return
+    
+    setIsClickDisabled(true)
+    setTimeout(() => setIsClickDisabled(false), 300)
+    
+    if (menuItem.image_url && !imageError) {
+      setShowImageModal(true)
+    } else {
+      setIsExpanded(!isExpanded)
+    }
+  }
+
+  const handleCloseModal = () => {
+    setShowImageModal(false)
+  }
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -30,7 +52,7 @@ export default function CustomerMenuItemCard({ menuItem, viewMode = 'grid' }: Cu
           {/* Image Section - List View */}
           <div 
             className="w-32 h-32 bg-gray-50 relative overflow-hidden flex-shrink-0"
-            onClick={() => menuItem.image_url && !imageError ? setShowImageModal(true) : setIsExpanded(!isExpanded)}
+            onClick={handleImageClick}
           >
             {menuItem.image_url && !imageError ? (
               <>
@@ -123,7 +145,7 @@ export default function CustomerMenuItemCard({ menuItem, viewMode = 'grid' }: Cu
       {/* Image Section */}
       <div 
         className="aspect-square bg-gray-50 relative overflow-hidden"
-        onClick={() => menuItem.image_url && !imageError ? setShowImageModal(true) : setIsExpanded(!isExpanded)}
+        onClick={handleImageClick}
       >
         {menuItem.image_url && !imageError ? (
           <>
@@ -264,7 +286,7 @@ export default function CustomerMenuItemCard({ menuItem, viewMode = 'grid' }: Cu
       {menuItem.image_url && !imageError && (
         <ImageModal
           isOpen={showImageModal}
-          onClose={() => setShowImageModal(false)}
+          onClose={handleCloseModal}
           imageUrl={menuItem.image_url}
           alt={menuItem.name}
           title={menuItem.name}
