@@ -1,0 +1,3 @@
+# Copy this file to terraform.tfvars and update with your values
+
+bucket_name = "food-lens-images-unique-suffix"  # Must be globally unique

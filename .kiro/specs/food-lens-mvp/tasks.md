@@ -38,13 +38,11 @@
   - Test menu CRUD operations through the UI with immediate visual feedback
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
 
-- [ ] 5. Integrate AWS S3 for image storage with visual feedback
-  - Configure AWS S3 bucket and IAM permissions
+- [x] 5. Integrate AWS S3 for image storage infrastructure
+  - Create and configure an AWS S3 bucket, CORS and IAM permissions, using terraform in a terraform folder
   - Implement S3 upload utilities with proper error handling
   - Create signed URL generation for secure image access
-  - Build image upload status tracking system with progress indicators
-  - Add visual upload progress and status indicators in the dashboard
-  - Test S3 integration with file uploads and visual confirmation
+  - Test S3 integration with basic file uploads
   - _Requirements: 3.4, 6.3_
 
 - [ ] 6. Implement Google Nano Banana API integration with UI updates
@@ -53,6 +51,8 @@
   - Implement automatic image generation pipeline for menu items
   - Build retry logic and error handling for API failures
   - Integrate image generation with menu item creation workflow
+  - Build image upload status tracking system with progress indicators
+  - Add visual upload progress and status indicators in the dashboard
   - Add visual image generation status and preview in dashboard
   - Test complete image generation pipeline with visual feedback
   - _Requirements: 3.1, 3.2, 3.5, 3.6_
