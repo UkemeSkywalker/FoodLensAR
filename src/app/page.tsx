@@ -10,12 +10,12 @@ export default function Home() {
             <div className="w-10 h-10 bg-red-500 rounded-xl flex items-center justify-center">
               <span className="text-white font-bold text-xl">F</span>
             </div>
-            <span className="text-2xl font-bold text-black">Food Lens</span>
+            <span className="text-2xl font-bold text-white">Food Lens</span>
           </div>
           <div className="flex items-center space-x-6">
             <Link
               href="/auth/login"
-              className="text-gray-600 hover:text-black transition-colors font-medium"
+              className="text-white/80 hover:text-white transition-colors font-medium"
             >
               Sign In
             </Link>
@@ -30,22 +30,30 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <main className="pt-32 pb-20">
-        <div className="max-w-7xl mx-auto px-6">
+      <main 
+        className="pt-32 pb-20 relative bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: "url('/generated-image-1760562093144.webp')",
+        }}
+      >
+        {/* Background overlay for better text readability */}
+        <div className="absolute inset-0 bg-black/40"></div>
+        
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="text-center max-w-4xl mx-auto">
-            <h1 className="text-6xl md:text-8xl font-bold text-black mb-8 leading-tight">
+            <h1 className="text-6xl md:text-8xl font-bold text-white mb-8 leading-tight">
               AI-Powered
-              <span className="block text-red-500">Restaurant</span>
-              <span className="block text-gray-400">Platform</span>
+              <span className="block text-red-400">Restaurant</span>
+              <span className="block text-gray-200">Platform</span>
             </h1>
 
-            <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xl text-gray-100 mb-12 max-w-2xl mx-auto leading-relaxed">
               Transform your restaurant menu with automatically generated augumented reality food
               experiences and intelligent AI agent advisory. The future of restaurant
               technology.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-20">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/auth/signup"
                 className="bg-red-500 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-red-600 transition-colors shadow-lg"
@@ -54,14 +62,18 @@ export default function Home() {
               </Link>
               <Link
                 href="/auth/login"
-                className="border-2 border-gray-200 text-black px-8 py-4 rounded-xl font-semibold text-lg hover:border-gray-300 transition-colors"
+                className="border-2 border-white/30 text-white bg-white/10 backdrop-blur-sm px-8 py-4 rounded-xl font-semibold text-lg hover:bg-white/20 hover:border-white/50 transition-colors"
               >
                 Sign In
               </Link>
             </div>
           </div>
+        </div>
+      </main>
 
-          {/* Features Grid */}
+      {/* Features Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 max-w-5xl mx-auto">
             <div className="text-center group">
               <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-red-100 transition-colors">
@@ -139,7 +151,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </main>
+      </section>
 
       {/* Stats Section */}
       <section className="py-20 bg-gray-50">
