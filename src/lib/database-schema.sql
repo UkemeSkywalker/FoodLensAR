@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS restaurants (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
+    qr_code_url TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -30,5 +31,6 @@ ALTER TABLE menu_items DISABLE ROW LEVEL SECURITY;
 
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_restaurants_email ON restaurants(email);
+CREATE INDEX IF NOT EXISTS idx_restaurants_qr_code_url ON restaurants(qr_code_url);
 CREATE INDEX IF NOT EXISTS idx_menu_items_restaurant_id ON menu_items(restaurant_id);
 CREATE INDEX IF NOT EXISTS idx_menu_items_created_at ON menu_items(created_at);

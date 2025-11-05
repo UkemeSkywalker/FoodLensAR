@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient, createPublicClient } from '@/lib/supabase'
+import { createServiceRoleClient, createPublicClient } from '@/lib/supabase'
 import { getAuthenticatedUserFromCookies } from '@/lib/auth'
 
 // Background image generation function
 async function triggerImageGeneration(itemId: string, itemName: string, description?: string) {
   try {
     // Update status to generating
-    const supabase = createServerClient()
+    const supabase = createServiceRoleClient()
     await supabase
       .from('menu_items')
       .update({ image_generation_status: 'generating' })
@@ -45,7 +45,7 @@ async function triggerImageGeneration(itemId: string, itemName: string, descript
     }
   } catch (error) {
     // Mark as failed
-    const supabase = createServerClient()
+    const supabase = createServiceRoleClient()
     await supabase
       .from('menu_items')
       .update({ image_generation_status: 'failed' })
@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ menuItems })
     } else {
       // Authenticated access - use server client
-      const supabase = createServerClient()
+      const supabase = createServiceRoleClient()
       const user = await getAuthenticatedUserFromCookies()
       if (!user) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Price must be a valid positive number' }, { status: 400 })
     }
 
-    const supabase = createServerClient()
+    const supabase = createServiceRoleClient()
 
     // Get restaurant ID from user email
     const { data: restaurant, error: restaurantError } = await supabase

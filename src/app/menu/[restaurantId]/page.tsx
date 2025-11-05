@@ -28,11 +28,16 @@ export default function CustomerMenuPage() {
       setLoading(true)
       setError(null)
 
-      // Fetch restaurant info and menu items
+      // Fetch restaurant info and menu items with timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
       const [restaurantResponse, menuResponse] = await Promise.all([
-        fetch(`/api/restaurants/${restaurantId}`),
-        fetch(`/api/menu?restaurantId=${restaurantId}&public=true`)
+        fetch(`/api/restaurants/${restaurantId}`, { signal: controller.signal }),
+        fetch(`/api/menu?restaurantId=${restaurantId}&public=true`, { signal: controller.signal })
       ])
+
+      clearTimeout(timeoutId);
 
       if (!restaurantResponse.ok || !menuResponse.ok) {
         throw new Error('Restaurant not found')
@@ -44,7 +49,11 @@ export default function CustomerMenuPage() {
       setRestaurant(restaurantData.restaurant)
       setMenuItems(menuData.menuItems || [])
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load menu')
+      if (err instanceof Error && err.name === 'AbortError') {
+        setError('Request timed out. Please try again.')
+      } else {
+        setError(err instanceof Error ? err.message : 'Failed to load menu')
+      }
     } finally {
       setLoading(false)
     }

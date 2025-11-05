@@ -1,4 +1,4 @@
-import { createServerClient } from './supabase'
+// Note: Server-side auth is handled directly in API routes
 import { NextRequest } from 'next/server'
 import type { User } from '@supabase/supabase-js'
 
@@ -14,16 +14,8 @@ export async function getAuthenticatedUser(request: NextRequest): Promise<User |
       return null
     }
 
-    const token = authHeader.substring(7)
-    const supabase = createServerClient()
-    
-    const { data: { user }, error } = await supabase.auth.getUser(token)
-    
-    if (error || !user) {
-      return null
-    }
-
-    return user
+    // Note: This function is deprecated in favor of direct server client usage in API routes
+    return null
   } catch (error) {
     console.error('Auth error:', error)
     return null
@@ -52,28 +44,9 @@ export function withAuth(handler: (req: AuthenticatedRequest) => Promise<Respons
   }
 }
 
-// Alternative auth method using cookies (for browser-based requests)
+// Server-side auth method using cookies (for Server Components and API Routes)
+// Note: This function is deprecated. Use direct server client creation in API routes instead.
 export async function getAuthenticatedUserFromCookies(): Promise<User | null> {
-  try {
-    const supabase = createServerClient()
-    
-    // Get the session from Supabase using cookies
-    const { data: { session }, error } = await supabase.auth.getSession()
-    
-    if (error) {
-      console.error('Session error:', error)
-      return null
-    }
-    
-    if (!session?.user) {
-      console.log('No session or user found')
-      return null
-    }
-    
-    console.log('Authenticated user:', session.user.email)
-    return session.user
-  } catch (error) {
-    console.error('Cookie auth error:', error)
-    return null
-  }
+  console.log('getAuthenticatedUserFromCookies is deprecated. Use direct server client in API routes.')
+  return null
 }

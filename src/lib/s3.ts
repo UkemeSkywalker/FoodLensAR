@@ -48,6 +48,7 @@ export async function uploadToS3(
       Key: key,
       Body: buffer,
       ContentType: contentType,
+      // Removed ACL - bucket should have public read policy instead
       ServerSideEncryption: 'AES256',
       Metadata: {
         uploadedAt: new Date().toISOString(),

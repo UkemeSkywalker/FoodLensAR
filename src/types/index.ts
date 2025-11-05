@@ -4,6 +4,7 @@ export interface Restaurant {
   id: string;
   name: string;
   email: string;
+  qr_code_url?: string;
   created_at: string;
   updated_at: string;
 }

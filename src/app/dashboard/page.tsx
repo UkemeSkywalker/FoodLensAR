@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import {
   AuthGuard,
   MenuItemCard,
@@ -27,6 +28,9 @@ export default function DashboardPage() {
   const [generatingImageId, setGeneratingImageId] = useState<string | null>(null);
   const [editingRestaurantName, setEditingRestaurantName] = useState(false);
   const [newRestaurantName, setNewRestaurantName] = useState('');
+  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+  const [generatingQrCode, setGeneratingQrCode] = useState(false);
+  const [showQrCodeModal, setShowQrCodeModal] = useState(false);
   const router = useRouter();
 
   const fetchRestaurantProfile = useCallback(async () => {
@@ -81,6 +85,13 @@ export default function DashboardPage() {
         console.log('=== Dashboard Restaurant Loaded ===');
         console.log('Restaurant data:', restaurant);
         setRestaurant(restaurant);
+        // Ensure qr_code_url is a valid string URL, not an error object
+        const qrUrl = restaurant.qr_code_url;
+        if (qrUrl && typeof qrUrl === 'string' && qrUrl.startsWith('http')) {
+          setQrCodeUrl(qrUrl);
+        } else {
+          setQrCodeUrl(null);
+        }
       }
     } catch (err) {
       console.error("Dashboard error:", err);
@@ -382,6 +393,77 @@ export default function DashboardPage() {
     } catch (err) {
       console.error('Error updating restaurant name:', err);
       alert('Failed to update restaurant name. Please try again.');
+    }
+  };
+
+  const handleGenerateQrCode = async () => {
+    if (!restaurant) return;
+
+    setGeneratingQrCode(true);
+    try {
+      // Get the current user session token
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast.error('Authentication error', 'Please log in again');
+        return;
+      }
+
+      const response = await fetch('/api/restaurants/qr-code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          restaurantId: restaurant.id
+        })
+      });
+
+      const result = await response.json();
+
+      console.log('QR Code generation result:', result);
+
+      if (result.success && result.qrCodeUrl) {
+        // Ensure qrCodeUrl is a string, not an object
+        const qrUrl = typeof result.qrCodeUrl === 'string' ? result.qrCodeUrl : result.qrCodeUrl?.url;
+        if (qrUrl) {
+          setQrCodeUrl(qrUrl);
+          setRestaurant(result.restaurant);
+          toast.success('QR Code generated!', 'Your customers can now scan to view your menu');
+        } else {
+          toast.error('Generation failed', 'Invalid QR code URL received');
+        }
+      } else {
+        toast.error('Generation failed', result.error || 'Please try again');
+        console.error('QR Code generation failed:', result);
+      }
+    } catch (error) {
+      console.error('Error generating QR code:', error);
+      toast.error('Generation error', 'Please try again');
+    } finally {
+      setGeneratingQrCode(false);
+    }
+  };
+
+  const handleDownloadQrCode = async () => {
+    if (!qrCodeUrl) return;
+
+    try {
+      const response = await fetch(qrCodeUrl);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${restaurant?.name || 'restaurant'}-qr-code.png`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      toast.success('Downloaded!', 'QR code saved to your device');
+    } catch (error) {
+      console.error('Error downloading QR code:', error);
+      toast.error('Download failed', 'Please try again');
     }
   };
 
@@ -698,6 +780,91 @@ export default function DashboardPage() {
             </div>
           </div>
 
+          {/* QR Code Section */}
+          <div className="bg-gray-50 rounded-2xl p-6 mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-xl font-bold text-black mb-2">Customer QR Code</h3>
+                <p className="text-gray-600">Generate a QR code for customers to easily access your menu</p>
+              </div>
+              <div className="flex items-center space-x-3">
+                {qrCodeUrl && (
+                  <>
+                    <button
+                      onClick={() => setShowQrCodeModal(true)}
+                      className="bg-gray-100 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors flex items-center space-x-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                      <span>View</span>
+                    </button>
+                    <button
+                      onClick={handleDownloadQrCode}
+                      className="bg-gray-100 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors flex items-center space-x-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <span>Download</span>
+                    </button>
+                  </>
+                )}
+                <button
+                  onClick={handleGenerateQrCode}
+                  disabled={generatingQrCode}
+                  className="bg-red-500 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-red-600 transition-colors flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {generatingQrCode ? (
+                    <>
+                      <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      <span>Generating...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                      </svg>
+                      <span>{qrCodeUrl ? 'Regenerate QR Code' : 'Generate QR Code'}</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+            
+            {qrCodeUrl && (
+              <div className="flex items-center space-x-4 bg-white rounded-xl p-4">
+                <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                  <Image 
+                    src={qrCodeUrl} 
+                    alt="QR Code" 
+                    width={64}
+                    height={64}
+                    className="w-full h-full object-contain"
+                    onError={(e) => {
+                      console.error('QR Code image failed to load:', qrCodeUrl);
+                      e.currentTarget.style.display = 'none';
+                    }}
+                    unoptimized={true}
+                  />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-black mb-1">QR Code Ready</p>
+                  <p className="text-xs text-gray-500">
+                    Customers can scan this code to view your menu at: /menu/{restaurant?.id}
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="text-xs text-green-600 font-medium">Active</span>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Menu Items */}
           {menuLoading ? (
             <div className="text-center py-12">
@@ -765,6 +932,73 @@ export default function DashboardPage() {
             onCancel={handleCancelForm}
             isSubmitting={isSubmitting}
           />
+        )}
+
+        {/* QR Code Modal */}
+        {showQrCodeModal && qrCodeUrl && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-8 max-w-md w-full">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-bold text-black">Customer Menu QR Code</h3>
+                <button
+                  onClick={() => setShowQrCodeModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              <div className="text-center">
+                <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 mb-6 inline-block">
+                  <Image 
+                    src={qrCodeUrl} 
+                    alt="QR Code for Customer Menu" 
+                    width={256}
+                    height={256}
+                    className="w-64 h-64 object-contain mx-auto"
+                    onError={(e) => {
+                      console.error('QR Code modal image failed to load:', qrCodeUrl);
+                      e.currentTarget.style.display = 'none';
+                    }}
+                    unoptimized={true}
+                  />
+                </div>
+                
+                <p className="text-gray-600 mb-6">
+                  Print this QR code and place it on tables, menus, or anywhere customers can scan it to view your menu.
+                </p>
+                
+                <div className="flex space-x-3">
+                  <button
+                    onClick={handleDownloadQrCode}
+                    className="flex-1 bg-red-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-red-600 transition-colors flex items-center justify-center space-x-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Download PNG</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (restaurant) {
+                        const menuUrl = `${window.location.origin}/menu/${restaurant.id}`;
+                        navigator.clipboard.writeText(menuUrl);
+                        toast.success('Copied!', 'Menu URL copied to clipboard');
+                      }
+                    }}
+                    className="flex-1 bg-gray-100 text-gray-700 px-6 py-3 rounded-xl font-semibold hover:bg-gray-200 transition-colors flex items-center justify-center space-x-2"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    <span>Copy URL</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Toast Notifications */}

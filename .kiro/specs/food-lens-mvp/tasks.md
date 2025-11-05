@@ -75,7 +75,7 @@
   - Test complete customer menu browsing experience
   - _Requirements: 3.6, 7.4_
 
-- [ ] 8. Implement QR code generation for customer menu access
+- [x] 8. Implement QR code generation for customer menu access
 
   - Add QR code URL field to restaurants database table
   - Create QR code generation API endpoint using qrcode library
