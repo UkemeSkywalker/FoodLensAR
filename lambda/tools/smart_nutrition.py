@@ -63,42 +63,28 @@ def smart_nutrition_lookup(food_name: str) -> Dict[str, Any]:
             
             # Step 2: Check regional foods
             if food_key in REGIONAL_FOODS:
-                nutrition = REGIONAL_FOODS[food_key]
+                nutrition = dict(REGIONAL_FOODS[food_key])  # Make a copy to avoid modifying original
                 description = nutrition.pop('description', '')
                 return _format_nutrition_response(food_name, nutrition, 'Nutritional Database', description)
             
             # Step 3 & 4: Try both USDA API and web search in parallel for speed
-            usda_task = asyncio.create_task(_try_usda_api(food_name, timeout=8.0))
-            web_task = asyncio.create_task(_try_web_search(food_name, timeout=6.0))
-            
-            # Wait for the first successful result or both to complete
-            done, pending = await asyncio.wait(
-                [usda_task, web_task], 
-                return_when=asyncio.FIRST_COMPLETED,
-                timeout=10.0  # Overall timeout for both
-            )
-            
-            # Cancel any pending tasks to save resources
-            for task in pending:
-                task.cancel()
-            
-            # Check results from completed tasks
-            for task in done:
-                try:
-                    result = await task
-                    if result and result.get('success'):
-                        return result
-                except Exception as e:
-                    logger.warning(f"Task failed: {str(e)}")
-            
-            # If no parallel results, try to get results from any remaining tasks
-            for task in pending:
-                try:
-                    result = await task
-                    if result and result.get('success'):
-                        return result
-                except Exception:
-                    pass
+            try:
+                usda_result, web_result = await asyncio.gather(
+                    _try_usda_api(food_name, timeout=8.0),
+                    _try_web_search(food_name, timeout=6.0),
+                    return_exceptions=True
+                )
+                
+                # Check USDA result first (more reliable)
+                if isinstance(usda_result, dict) and usda_result.get('success'):
+                    return usda_result
+                
+                # Check web search result
+                if isinstance(web_result, dict) and web_result.get('success'):
+                    return web_result
+                    
+            except Exception as e:
+                logger.warning(f"Parallel lookup failed: {str(e)}")
             
             # Step 5: Generate intelligent estimate based on food category
             return _generate_smart_estimate(food_name)
@@ -107,14 +93,20 @@ def smart_nutrition_lookup(food_name: str) -> Dict[str, Any]:
             logger.error(f"Error in smart nutrition lookup: {str(e)}")
             return _generate_smart_estimate(food_name)
     
-    # Run the async function synchronously
+    # Run async code synchronously
     try:
         loop = asyncio.get_event_loop()
+        if loop.is_running():
+            # If there's already a running loop, create a new one in a thread
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                future = executor.submit(asyncio.run, _async_lookup())
+                return future.result(timeout=15)
+        else:
+            return loop.run_until_complete(_async_lookup())
     except RuntimeError:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-    
-    return loop.run_until_complete(_async_lookup())
+        # No event loop, create a new one
+        return asyncio.run(_async_lookup())
 
 
 async def _try_usda_api(food_name: str, timeout: float = 8.0) -> Optional[Dict[str, Any]]:
@@ -305,15 +297,3 @@ def _format_nutrition_response(food_name: str, nutrition: Dict[str, Any], source
     }
 
 
-# Synchronous wrapper for compatibility
-def smart_nutrition_lookup_sync(food_name: str) -> Dict[str, Any]:
-    """Synchronous wrapper for smart_nutrition_lookup tool."""
-    import asyncio
-    
-    try:
-        loop = asyncio.get_event_loop()
-    except RuntimeError:
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-    
-    return loop.run_until_complete(smart_nutrition_lookup(food_name))

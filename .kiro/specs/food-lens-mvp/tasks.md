@@ -85,7 +85,7 @@
   - Test QR code generation and customer menu access flow
   - _Requirements: 2.5, 3.6, 7.4_
 
-- [ ] 9. Set up AWS Lambda Strands Agent service with testing
+- [x] 9. Set up AWS Lambda Strands Agent service with testing
 
   - Create lambda/ directory structure for Python Strands Agent service
   - Implement agent_handler.py with Strands Agent configuration and system prompt
