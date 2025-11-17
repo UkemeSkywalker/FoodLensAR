@@ -26,7 +26,6 @@ def get_dish_info(dish_id: str, restaurant_id: str) -> Dict[str, Any]:
     """
     try:
         api_endpoint = os.environ.get('FOOD_LENS_API_ENDPOINT')
-        api_key = os.environ.get('FOOD_LENS_API_KEY')
         
         if not api_endpoint:
             logger.error("FOOD_LENS_API_ENDPOINT not configured")
@@ -36,38 +35,46 @@ def get_dish_info(dish_id: str, restaurant_id: str) -> Dict[str, Any]:
                 'restaurant_id': restaurant_id
             }
         
-        # Construct API URL
-        url = f"{api_endpoint}/api/menu/{dish_id}"
-        headers = {}
+        # Construct API URL for public menu access
+        url = f"{api_endpoint}/api/menu"
         
-        if api_key:
-            headers['Authorization'] = f"Bearer {api_key}"
-        
-        # Make API request
+        # Make API request to get all menu items for the restaurant
         with httpx.Client(timeout=10.0) as client:
             response = client.get(
                 url,
-                headers=headers,
-                params={'restaurant_id': restaurant_id}
+                params={
+                    'restaurantId': restaurant_id,
+                    'public': 'true'
+                }
             )
             
             if response.status_code == 200:
-                dish_data = response.json()
-                logger.info(f"Successfully fetched dish info for {dish_id}")
-                return {
-                    'success': True,
-                    'dish': dish_data,
-                    'dish_id': dish_id,
-                    'restaurant_id': restaurant_id
-                }
-            elif response.status_code == 404:
-                return {
-                    'error': 'Dish not found',
-                    'dish_id': dish_id,
-                    'restaurant_id': restaurant_id
-                }
+                data = response.json()
+                menu_items = data.get('menuItems', [])
+                
+                # Find the specific dish by ID
+                dish = None
+                for item in menu_items:
+                    if item.get('id') == dish_id:
+                        dish = item
+                        break
+                
+                if dish:
+                    logger.info(f"Successfully fetched dish info for {dish_id}")
+                    return {
+                        'success': True,
+                        'dish': dish,
+                        'dish_id': dish_id,
+                        'restaurant_id': restaurant_id
+                    }
+                else:
+                    return {
+                        'error': 'Dish not found in menu',
+                        'dish_id': dish_id,
+                        'restaurant_id': restaurant_id
+                    }
             else:
-                logger.error(f"API request failed with status {response.status_code}")
+                logger.error(f"API request failed with status {response.status_code}: {response.text}")
                 return {
                     'error': f'API request failed: {response.status_code}',
                     'dish_id': dish_id,

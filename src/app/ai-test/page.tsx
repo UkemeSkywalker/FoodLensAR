@@ -5,7 +5,7 @@ import { useState } from 'react'
 interface AIResponse {
   textResponse: string
   audioUrl?: string
-  nutritionData?: any
+  nutritionData?: Record<string, unknown>
   error?: string
   details?: string
 }
@@ -17,7 +17,7 @@ export default function AITestPage() {
   const [dishName, setDishName] = useState('')
   const [response, setResponse] = useState<AIResponse | null>(null)
   const [loading, setLoading] = useState(false)
-  const [healthStatus, setHealthStatus] = useState<any>(null)
+  const [healthStatus, setHealthStatus] = useState<Record<string, unknown> | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -183,17 +183,17 @@ export default function AITestPage() {
             <div>
               <h4 className="font-medium text-black mb-2">General Nutrition</h4>
               <ul className="text-sm text-gray-700 space-y-1">
-                <li>• "Tell me about the nutritional content of pizza"</li>
-                <li>• "What are the health benefits of salmon?"</li>
-                <li>• "How many calories are in a burger?"</li>
+                <li>• &ldquo;Tell me about the nutritional content of pizza&rdquo;</li>
+                <li>• &ldquo;What are the health benefits of salmon?&rdquo;</li>
+                <li>• &ldquo;How many calories are in a burger?&rdquo;</li>
               </ul>
             </div>
             <div>
               <h4 className="font-medium text-black mb-2">Dietary Restrictions</h4>
               <ul className="text-sm text-gray-700 space-y-1">
-                <li>• "I'm diabetic, what should I avoid?"</li>
-                <li>• "Do you have gluten-free options?"</li>
-                <li>• "I'm allergic to nuts, is this dish safe?"</li>
+                <li>• &ldquo;I&rsquo;m diabetic, what should I avoid?&rdquo;</li>
+                <li>• &ldquo;Do you have gluten-free options?&rdquo;</li>
+                <li>• &ldquo;I&rsquo;m allergic to nuts, is this dish safe?&rdquo;</li>
               </ul>
             </div>
           </div>

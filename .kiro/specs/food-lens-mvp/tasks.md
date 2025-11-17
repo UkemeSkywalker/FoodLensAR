@@ -97,7 +97,7 @@
   - Test Lambda function locally and verify tool functionality
   - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
 
-- [ ] 10. Implement AI Food Advisor API integration with UI testing
+- [x] 10. Implement AI Food Advisor API integration with UI testing
 
   - Create API route for handling AI queries with Lambda invocation
   - Implement AWS Lambda client for invoking Strands Agent function
@@ -108,7 +108,7 @@
   - Test AI integration with various query types and visual feedback
   - _Requirements: 4.1, 4.6_
 
-- [ ] 11. Integrate ElevenLabs TTS with audio controls
+- [x] 11. Integrate ElevenLabs TTS with audio controls
 
   - Set up ElevenLabs API client and authentication
   - Implement text-to-speech conversion service
@@ -119,13 +119,13 @@
   - Test voice synthesis with sample text and playback controls
   - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-- [ ] 12. Build interactive AI chat interface
+- [x] 12. Build interactive AI chat interface
 
   - Create chat UI component with message history and modern design
   - Implement real-time query submission and response display with animations
   - Add voice playback controls with audio player and waveform visualization
   - Build typing indicators and loading states with smooth transitions
-  - Integrate dish context selection for targeted queries with visual dish cards
+  - Integrate dish context selection for targeted queries with visual dish cards in customer menu
   - Create responsive chat layout that works on mobile and desktop
   - Test complete chat experience with AI responses and voice playback
   - _Requirements: 4.1, 4.6, 5.4_
