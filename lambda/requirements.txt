@@ -1,0 +1,18 @@
+# Strands Agents SDK and core dependencies
+strands-agents>=0.1.0
+
+# HTTP client for API requests
+httpx>=0.25.0
+
+# JSON handling (included in Python standard library, but explicit for clarity)
+# json - built-in
+
+# Logging (built-in)
+# logging - built-in
+
+# Type hints (built-in in Python 3.9+)
+# typing - built-in
+
+# AWS Lambda runtime (provided by AWS)
+# boto3 - provided by AWS Lambda runtime
+# botocore - provided by AWS Lambda runtime

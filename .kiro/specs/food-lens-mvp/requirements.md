@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Food Lens is an AI-powered restaurant platform that enables restaurants to upload menus and automatically generate high-quality food images. The MVP includes restaurant onboarding, menu management, AI-powered food advisory through AWS Strands, and voice synthesis via ElevenLabs. The platform is built as a containerized Next.js application deployed on AWS App Runner, using Supabase for database and authentication, and AWS S3 for object storage.
+Food Lens is an AI-powered restaurant platform that enables restaurants to upload menus and automatically generate high-quality food images. The MVP includes restaurant onboarding, menu management, AI-powered food advisory through AWS Lambda with Strands Agents Python SDK, and voice synthesis via ElevenLabs. The platform is built as a containerized Next.js application deployed on AWS App Runner, with a separate Python-based Lambda service for AI functionality, using Supabase for database and authentication, and AWS S3 for object storage.
 
 ## Requirements
 
@@ -49,10 +49,10 @@ Food Lens is an AI-powered restaurant platform that enables restaurants to uploa
 
 #### Acceptance Criteria
 
-1. WHEN a customer submits a query about a dish THEN the system SHALL forward the request to AWS Strands Agent
-2. WHEN AWS Strands processes a query THEN the system SHALL have access to GetDishInfo tool for menu item details
-3. WHEN AWS Strands processes a query THEN the system SHALL have access to NutritionLookup tool for nutritional information
-4. WHEN AWS Strands generates a response THEN the system SHALL return concise, friendly, and dietary-aware information
+1. WHEN a customer submits a query about a dish THEN the system SHALL forward the request to AWS Lambda Strands Agent service
+2. WHEN the Lambda Strands Agent processes a query THEN the system SHALL have access to GetDishInfo tool for menu item details
+3. WHEN the Lambda Strands Agent processes a query THEN the system SHALL have access to NutritionLookup tool for nutritional information
+4. WHEN the Lambda Strands Agent generates a response THEN the system SHALL return concise, friendly, and dietary-aware information
 5. IF a user indicates allergies or medical concerns THEN the system SHALL ask clarifying questions and provide medical disclaimers
 6. WHEN a response is generated THEN the system SHALL return the text to the frontend for display
 

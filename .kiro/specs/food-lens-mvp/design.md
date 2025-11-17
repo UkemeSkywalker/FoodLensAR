@@ -20,10 +20,16 @@ graph TB
         AUTH[Supabase Auth]
     end
     
+    subgraph "AWS Lambda Services"
+        LAMBDA[Strands Agent Lambda]
+        TOOLS[Custom Python Tools]
+    end
+    
     subgraph "External Services"
         NANO[Google Nano Banana API]
-        STRANDS[AWS Strands Agent]
         TTS[ElevenLabs TTS]
+        BEDROCK[AWS Bedrock]
+        NUTRITION[USDA Nutrition API]
     end
     
     subgraph "Data Layer"
@@ -35,12 +41,15 @@ graph TB
     DEV --> UI
     API --> AUTH
     API --> NANO
-    API --> STRANDS
     API --> TTS
+    API --> LAMBDA
     API --> DB
     API --> S3
     
-    STRANDS --> API
+    LAMBDA --> TOOLS
+    LAMBDA --> BEDROCK
+    TOOLS --> API
+    TOOLS --> NUTRITION
 ```
 
 ### System Flow
@@ -48,7 +57,7 @@ graph TB
 1. **Restaurant Onboarding**: Supabase Auth → Restaurant Profile Creation
 2. **Menu Management**: CRUD operations via Next.js API → Supabase Database
 3. **Image Generation**: Menu Item Creation → Google Nano Banana API → AWS S3 Storage
-4. **AI Food Advisory**: User Query → AWS Strands Agent → Nutrition/Dish APIs → Response
+4. **AI Food Advisory**: User Query → Next.js API → AWS Lambda (Strands Agent) → Custom Tools → Response
 5. **Voice Synthesis**: Text Response → ElevenLabs TTS → Audio Playback
 
 ## Components and Interfaces
@@ -107,38 +116,157 @@ Response: {
   audioUrl?: string,
   nutritionData?: NutritionInfo 
 }
+
+// Internal Lambda invocation (not direct API)
+// AWS Lambda Function: food-lens-strands-agent
+Payload: {
+  prompt: string,
+  context: {
+    restaurantId: string,
+    dishId?: string,
+    menuApiEndpoint: string
+  }
+}
+Response: {
+  response: string,
+  nutritionData?: object
+}
 ```
 
-### AWS Strands Agent Design
+### AWS Lambda Strands Agent Design
+
+#### Lambda Function Structure
+```
+lambda/
+├── agent_handler.py          # Main Lambda handler
+├── tools/
+│   ├── __init__.py
+│   ├── dish_info.py         # Get dish information tool
+│   ├── nutrition_lookup.py  # USDA nutrition API tool
+│   └── dietary_advice.py    # Dietary guidance tool
+├── requirements.txt         # Python dependencies
+└── config.py               # Configuration and constants
+```
 
 #### Agent Configuration
 ```python
-# Food Advisor Agent
-agent_name = "DishAI_FoodAdvisor"
-agent_description = "Friendly food advisor providing dish information and nutrition guidance"
+# lambda/agent_handler.py
+from strands import Agent
+from tools.dish_info import get_dish_info
+from tools.nutrition_lookup import nutrition_lookup
+from tools.dietary_advice import dietary_advice
 
-# Custom Tools
-@tool
-async def get_dish_info(dish_id: str, tool_context: ToolContext) -> dict:
-    """Fetch detailed menu item information from Supabase."""
-    # Implementation connects to Next.js API endpoint
+FOOD_ADVISOR_SYSTEM_PROMPT = """You are a friendly food advisor for Food Lens restaurants. You help customers understand menu items, provide nutritional information, and offer dietary guidance.
+
+When responding:
+- Be concise and friendly
+- Include nutritional information when available
+- Always include medical disclaimers for health/allergy questions
+- Format responses for voice synthesis (avoid special characters)
+- Focus on the specific restaurant's menu items
+
+Available tools:
+- get_dish_info: Get detailed information about specific menu items
+- nutrition_lookup: Get nutritional data from USDA database
+- dietary_advice: Provide dietary guidance with disclaimers
+"""
+
+def handler(event, context):
+    agent = Agent(
+        system_prompt=FOOD_ADVISOR_SYSTEM_PROMPT,
+        tools=[get_dish_info, nutrition_lookup, dietary_advice],
+    )
     
-@tool  
-async def nutrition_lookup(food_name: str, ingredients: list) -> dict:
-    """Get nutritional information using USDA API."""
-    # Implementation calls external nutrition API
+    prompt = event.get('prompt')
+    restaurant_context = event.get('context', {})
     
-@tool
-async def dietary_advice(query: str, dietary_restrictions: list) -> str:
-    """Provide dietary guidance with appropriate disclaimers."""
-    # Implementation includes medical disclaimers
+    # Add context to prompt if available
+    if restaurant_context.get('dishId'):
+        prompt = f"Context: Restaurant ID {restaurant_context['restaurantId']}, Dish ID {restaurant_context['dishId']}. Query: {prompt}"
+    
+    response = agent(prompt)
+    return {
+        'response': str(response),
+        'context': restaurant_context
+    }
 ```
 
-#### Agent Response Format
-- Concise, friendly tone
-- Dietary-aware recommendations
-- Automatic medical disclaimers for allergy/health queries
-- Structured responses for voice synthesis
+#### Custom Tools Implementation
+```python
+# tools/dish_info.py
+@tool
+async def get_dish_info(dish_id: str, restaurant_id: str) -> dict:
+    """Fetch detailed menu item information from Food Lens API."""
+    import httpx
+    import os
+    
+    api_endpoint = os.environ.get('FOOD_LENS_API_ENDPOINT')
+    api_key = os.environ.get('FOOD_LENS_API_KEY')
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            f"{api_endpoint}/api/menu/{dish_id}",
+            headers={"Authorization": f"Bearer {api_key}"},
+            params={"restaurant_id": restaurant_id}
+        )
+        return response.json()
+
+# tools/nutrition_lookup.py
+@tool
+async def nutrition_lookup(food_name: str, ingredients: list = None) -> dict:
+    """Get nutritional information using USDA FoodData Central API."""
+    import httpx
+    import os
+    
+    usda_api_key = os.environ.get('USDA_API_KEY')
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            "https://api.nal.usda.gov/fdc/v1/foods/search",
+            params={
+                "query": food_name,
+                "api_key": usda_api_key,
+                "pageSize": 1
+            }
+        )
+        return response.json()
+
+# tools/dietary_advice.py
+@tool
+async def dietary_advice(query: str, dietary_restrictions: list = None) -> str:
+    """Provide dietary guidance with appropriate medical disclaimers."""
+    disclaimer = "⚠️ This is general information only. Consult healthcare providers for medical advice."
+    
+    # Process dietary guidance logic here
+    advice = f"Based on your query about {query}, here's some general guidance... {disclaimer}"
+    return advice
+```
+
+#### Lambda Deployment Configuration
+```python
+# CDK deployment configuration
+lambda_function = aws_lambda.Function(
+    self, "FoodLensStrandsAgent",
+    runtime=aws_lambda.Runtime.PYTHON_3_12,
+    handler="agent_handler.handler",
+    code=aws_lambda.Code.from_asset("lambda"),
+    timeout=Duration.seconds(30),
+    memory_size=512,
+    environment={
+        "FOOD_LENS_API_ENDPOINT": food_lens_api_endpoint,
+        "USDA_API_KEY": usda_api_key,
+    },
+    layers=[dependencies_layer]
+)
+
+# Add Bedrock permissions
+lambda_function.add_to_role_policy(
+    aws_iam.PolicyStatement(
+        actions=["bedrock:InvokeModel", "bedrock:InvokeModelWithResponseStream"],
+        resources=["*"]
+    )
+)
+```
 
 ## Data Models
 
