@@ -12,6 +12,7 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const router = useRouter();
 
@@ -19,6 +20,7 @@ export default function SignupPage() {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setSuccessMessage("");
 
     if (!agreedToTerms) {
       setError("Please agree to the Terms of Service and Privacy Policy");
@@ -47,19 +49,28 @@ export default function SignupPage() {
         return;
       }
 
-      // After successful signup, sign in the user
+      // Check if email confirmation is required
+      if (data.user && !data.user.confirmed_at && data.user.confirmation_sent_at) {
+        // Email confirmation required
+        setSuccessMessage("Account created! Please check your email to confirm your account before signing in.");
+        setTimeout(() => router.push("/auth/login"), 3000);
+        return;
+      }
+
+      // If no confirmation required, try to sign in automatically
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (signInError) {
-        setError(
-          "Account created but failed to sign in. Please try logging in."
-        );
+        // If auto-login fails, redirect to login page
+        setSuccessMessage("Account created successfully! Please sign in to continue.");
+        setTimeout(() => router.push("/auth/login"), 2000);
         return;
       }
 
+      // Successfully signed in
       router.push("/dashboard");
     } catch (err) {
       console.error("Signup error:", err);
@@ -150,6 +161,12 @@ export default function SignupPage() {
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-xl p-4">
                 <div className="text-sm text-red-700">{error}</div>
+              </div>
+            )}
+
+            {successMessage && (
+              <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                <div className="text-sm text-green-700">{successMessage}</div>
               </div>
             )}
 

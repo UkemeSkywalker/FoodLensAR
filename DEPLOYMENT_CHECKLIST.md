@@ -72,7 +72,7 @@ Go to S3 Console → `food-lens-image-gen` bucket → Permissions → Block publ
 | `AWS_SECRET_ACCESS_KEY` | `[YOUR_AWS_SECRET_ACCESS_KEY]` |
 | `AWS_REGION` | `us-east-1` |
 | `AWS_S3_BUCKET_NAME` | `food-lens-image-gen` |
-| `GOOGLE_NANO_BANANA_API_KEY` | `[YOUR_GOOGLE_API_KEY]` |
+| `GOOGLE_NANO_BANANA_API_KEY` | `º
 | `GOOGLE_NANO_BANANA_API_URL` | `https://api.google.nano-banana.com/v1` |
 | `STRANDS_LAMBDA_FUNCTION_NAME` | `food-lens-strands-agent` |
 | `FOOD_LENS_API_ENDPOINT` | `[YOUR_APP_RUNNER_URL]` |
