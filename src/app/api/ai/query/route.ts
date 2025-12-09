@@ -1,14 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda'
+import { textToSpeech } from '@/lib/elevenlabs'
 
-// Initialize Lambda client
-const lambdaClient = new LambdaClient({
-  region: process.env.AWS_REGION || 'us-east-1',
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
-  }
-})
+// Factory function to create Lambda client
+function createLambdaClient(): LambdaClient {
+  return new LambdaClient({
+    region: process.env.AWS_REGION || 'us-east-1',
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+    }
+  });
+}
 
 interface AIQueryRequest {
   query: string
@@ -22,7 +25,7 @@ interface AIQueryRequest {
 interface AIQueryResponse {
   textResponse: string
   audioUrl?: string
-  nutritionData?: any
+  nutritionData?: Record<string, unknown>
 }
 
 export async function POST(request: NextRequest) {
@@ -55,6 +58,7 @@ export async function POST(request: NextRequest) {
     console.log('Invoking Lambda with payload:', JSON.stringify(lambdaPayload, null, 2))
 
     // Invoke Lambda function
+    const lambdaClient = createLambdaClient();
     const command = new InvokeCommand({
       FunctionName: process.env.STRANDS_LAMBDA_FUNCTION_NAME || 'food-lens-strands-agent',
       Payload: JSON.stringify(lambdaPayload),
@@ -79,17 +83,14 @@ export async function POST(request: NextRequest) {
 
     // Extract response from Lambda
     let textResponse: string
-    let context: any = {}
 
     if (responsePayload.body) {
       // Lambda returned HTTP response format
       const parsedBody = JSON.parse(responsePayload.body)
       textResponse = parsedBody.response || parsedBody.textResponse || 'I apologize, but I encountered an issue processing your request. Please try asking about specific nutritional information or menu items, and I\'ll do my best to help.'
-      context = parsedBody.context || {}
     } else {
       // Lambda returned direct response
       textResponse = responsePayload.response || responsePayload.textResponse || 'I apologize, but I encountered an issue processing your request. Please try asking about specific nutritional information or menu items, and I\'ll do my best to help.'
-      context = responsePayload.context || {}
     }
 
     // Additional safety check
@@ -97,11 +98,27 @@ export async function POST(request: NextRequest) {
       textResponse = 'I\'m here to help with nutritional information and menu guidance. Could you please rephrase your question or ask about a specific food item?'
     }
 
+    // Generate audio for the response (optional, non-blocking)
+    let audioUrl: string | undefined;
+    try {
+      console.log('Generating TTS for AI response...');
+      const audioBuffer = await textToSpeech(textResponse);
+      
+      // Create a blob URL for the audio (in a real app, you might want to store this in S3)
+      // For now, we'll return the audio as base64 data URL
+      const base64Audio = audioBuffer.toString('base64');
+      audioUrl = `data:audio/mpeg;base64,${base64Audio}`;
+      
+      console.log('TTS generation successful');
+    } catch (ttsError) {
+      console.error('TTS generation failed (non-blocking):', ttsError);
+      // Continue without audio - this is optional functionality
+    }
+
     // Prepare API response
     const apiResponse: AIQueryResponse = {
       textResponse,
-      // TODO: Implement TTS integration for audioUrl
-      // audioUrl: undefined,
+      audioUrl,
       // TODO: Extract nutrition data if available
       // nutritionData: context.nutritionData
     }

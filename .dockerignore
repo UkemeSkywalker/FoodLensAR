@@ -1,13 +1,158 @@
-Dockerfile
-.dockerignore
+# Dependencies
 node_modules
-npm-debug.log
-README.md
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
 .env
 .env.local
+.env.development.local
+.env.test.local
 .env.production.local
-.env.staging.local
+
+# Next.js build output (keep .next for builder stage)
+out/
+
+# Production build files
+build/
+dist/
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Dependency directories
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+.parcel-cache
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+
+# yarn v2
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Git
 .git
 .gitignore
-.next
-.vercel
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Documentation
+README.md
+*.md
+
+# Lambda and CDK files (not needed in web container)
+lambda/
+cdk/
+
+# Test files
+**/*.test.js
+**/*.test.ts
+**/*.spec.js
+**/*.spec.ts
+test/
+tests/
+__tests__/
+
+# Kiro files
+.kiro/
+
+# Temporary files
+tmp/
+temp/
+
+# Python virtual environments and cache
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/venv/
+**/.venv/
+**/env/
+
+# Terraform
+**/.terraform/
+**/.terraform.lock.hcl
+**/terraform.tfstate*
+**/terraform.tfvars
+
+# Build artifacts
+*.log
+.DS_Store
+
+# Development and test files
+*.test.tsx
+*.test.ts
+*.spec.tsx
+*.spec.ts
+test-*.js
+test-*.ts
+
+# Scripts and utilities not needed in container
+restore-env.sh
+docker-build-local.sh
+
+# Database files
+*.sql
+
+# Large media files (if any)
+*.mp4
+*.mov
+*.avi

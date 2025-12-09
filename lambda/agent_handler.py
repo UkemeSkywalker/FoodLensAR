@@ -74,6 +74,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 })
             }
         
+        # Set API endpoint from context if available
+        if restaurant_context.get('menuApiEndpoint'):
+            os.environ['FOOD_LENS_API_ENDPOINT'] = restaurant_context['menuApiEndpoint']
+        
         # Initialize Strands Agent with smart tools
         agent = Agent(
             system_prompt=FOOD_ADVISOR_SYSTEM_PROMPT,
@@ -83,7 +87,11 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         # Add context to prompt if available
         enhanced_prompt = prompt
         if restaurant_context.get('dishId'):
-            enhanced_prompt = f"Context: Restaurant ID {restaurant_context['restaurantId']}, Dish ID {restaurant_context['dishId']}. Customer Query: {prompt}"
+            enhanced_prompt = f"""Context: Restaurant ID {restaurant_context['restaurantId']}, Dish ID {restaurant_context['dishId']}, Dish Name: {restaurant_context.get('dishName', 'Unknown')}. 
+
+Customer Query: {prompt}
+
+Instructions: Use get_dish_info tool with dish_id="{restaurant_context['dishId']}" and restaurant_id="{restaurant_context['restaurantId']}" to get detailed information about this specific menu item before answering."""
         elif restaurant_context.get('restaurantId'):
             enhanced_prompt = f"Context: Restaurant ID {restaurant_context['restaurantId']}. Customer Query: {prompt}"
         
@@ -95,9 +103,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         def timeout_handler(signum, frame):
             raise TimeoutError("Agent processing timed out")
         
-        # Set a 50-second timeout (10 seconds before Lambda timeout)
+        # Set a 80-second timeout (10 seconds before Lambda timeout)
         signal.signal(signal.SIGALRM, timeout_handler)
-        signal.alarm(50)
+        signal.alarm(80)
         
         try:
             response = agent(enhanced_prompt)

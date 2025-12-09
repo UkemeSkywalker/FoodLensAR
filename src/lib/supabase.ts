@@ -8,11 +8,51 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 // Client for frontend use (Client Components)
-export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
+  cookies: {
+    getAll() {
+      return document.cookie.split(';').map(cookie => {
+        const [name, ...rest] = cookie.trim().split('=')
+        return { name, value: rest.join('=') }
+      })
+    },
+    setAll(cookiesToSet) {
+      cookiesToSet.forEach(({ name, value, options }) => {
+        let cookie = `${name}=${value}`
+        if (options?.maxAge) cookie += `; max-age=${options.maxAge}`
+        if (options?.path) cookie += `; path=${options.path}`
+        if (options?.domain) cookie += `; domain=${options.domain}`
+        if (options?.sameSite) cookie += `; samesite=${options.sameSite}`
+        if (options?.secure) cookie += '; secure'
+        document.cookie = cookie
+      })
+    }
+  }
+})
 
 // Client for public server-side operations (uses anon key for public access)
 export const createPublicClient = () => {
-  return createBrowserClient(supabaseUrl, supabaseAnonKey)
+  return createBrowserClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      getAll() {
+        return document.cookie.split(';').map(cookie => {
+          const [name, ...rest] = cookie.trim().split('=')
+          return { name, value: rest.join('=') }
+        })
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value, options }) => {
+          let cookie = `${name}=${value}`
+          if (options?.maxAge) cookie += `; max-age=${options.maxAge}`
+          if (options?.path) cookie += `; path=${options.path}`
+          if (options?.domain) cookie += `; domain=${options.domain}`
+          if (options?.sameSite) cookie += `; samesite=${options.sameSite}`
+          if (options?.secure) cookie += '; secure'
+          document.cookie = cookie
+        })
+      }
+    }
+  })
 }
 
 // Service role client for admin operations
@@ -21,5 +61,25 @@ export const createServiceRoleClient = () => {
   if (!serviceRoleKey) {
     throw new Error('Missing Supabase service role key')
   }
-  return createBrowserClient(supabaseUrl, serviceRoleKey)
+  return createBrowserClient(supabaseUrl, serviceRoleKey, {
+    cookies: {
+      getAll() {
+        return document.cookie.split(';').map(cookie => {
+          const [name, ...rest] = cookie.trim().split('=')
+          return { name, value: rest.join('=') }
+        })
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value, options }) => {
+          let cookie = `${name}=${value}`
+          if (options?.maxAge) cookie += `; max-age=${options.maxAge}`
+          if (options?.path) cookie += `; path=${options.path}`
+          if (options?.domain) cookie += `; domain=${options.domain}`
+          if (options?.sameSite) cookie += `; samesite=${options.sameSite}`
+          if (options?.secure) cookie += '; secure'
+          document.cookie = cookie
+        })
+      }
+    }
+  })
 }

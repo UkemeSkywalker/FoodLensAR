@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase'
+import { createServiceRoleClient } from '@/lib/supabase'
 import { getAuthenticatedUserFromCookies } from '@/lib/auth'
 
 // GET /api/menu/[itemId] - Get specific menu item
@@ -14,7 +14,7 @@ export async function GET(
     }
 
     const { itemId } = await params
-    const supabase = createServerClient()
+    const supabase = createServiceRoleClient()
 
     // Get restaurant ID from user email
     const { data: restaurant, error: restaurantError } = await supabase
@@ -72,7 +72,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Price must be a valid positive number' }, { status: 400 })
     }
 
-    const supabase = createServerClient()
+    const supabase = createServiceRoleClient()
 
     // Get restaurant ID from user email
     const { data: restaurant, error: restaurantError } = await supabase
@@ -127,7 +127,7 @@ export async function DELETE(
     }
 
     const { itemId } = await params
-    const supabase = createServerClient()
+    const supabase = createServiceRoleClient()
 
     // Get restaurant ID from user email
     const { data: restaurant, error: restaurantError } = await supabase

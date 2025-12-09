@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
-import { createServerClient } from '@/lib/supabase'
+import { supabase, createServiceRoleClient } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
@@ -46,8 +45,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create restaurant profile using server client
-    const serverSupabase = createServerClient()
+    // Create restaurant profile using service role client
+    const serverSupabase = createServiceRoleClient()
     const { data: restaurant, error: profileError } = await serverSupabase
       .from('restaurants')
       .insert([

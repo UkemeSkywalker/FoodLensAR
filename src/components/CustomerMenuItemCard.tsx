@@ -8,9 +8,10 @@ import { ImageModal } from '@/components'
 interface CustomerMenuItemCardProps {
   menuItem: MenuItem
   viewMode?: 'grid' | 'list'
+  onAskAI?: (menuItem: MenuItem) => void
 }
 
-export default function CustomerMenuItemCard({ menuItem, viewMode = 'grid' }: CustomerMenuItemCardProps) {
+export default function CustomerMenuItemCard({ menuItem, viewMode = 'grid', onAskAI }: CustomerMenuItemCardProps) {
   const [imageError, setImageError] = useState(false)
   const [imageLoading, setImageLoading] = useState(true)
   const [isExpanded, setIsExpanded] = useState(false)
@@ -74,6 +75,8 @@ export default function CustomerMenuItemCard({ menuItem, viewMode = 'grid' }: Cu
                     setImageLoading(false)
                   }}
                   sizes="128px"
+                  unoptimized={true}
+                  loading="lazy"
                 />
               </>
             ) : (
@@ -111,7 +114,7 @@ export default function CustomerMenuItemCard({ menuItem, viewMode = 'grid' }: Cu
               )}
 
               {menuItem.ingredients && menuItem.ingredients.length > 0 && (
-                <div className="flex flex-wrap gap-1">
+                <div className="flex flex-wrap gap-1 mb-3">
                   {(isExpanded ? menuItem.ingredients : menuItem.ingredients.slice(0, 3)).map((ingredient, index) => (
                     <span
                       key={index}
@@ -132,6 +135,22 @@ export default function CustomerMenuItemCard({ menuItem, viewMode = 'grid' }: Cu
                     </button>
                   )}
                 </div>
+              )}
+
+              {/* Ask AI Button for List View */}
+              {onAskAI && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onAskAI(menuItem)
+                  }}
+                  className="px-3 py-1 bg-blue-500 text-white text-xs font-medium rounded-full hover:bg-blue-600 transition-colors flex items-center space-x-1"
+                >
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                  <span>Ask AI</span>
+                </button>
               )}
             </div>
           </div>
@@ -167,6 +186,8 @@ export default function CustomerMenuItemCard({ menuItem, viewMode = 'grid' }: Cu
                 setImageLoading(false)
               }}
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
+              unoptimized={true}
+              loading="lazy"
             />
           </>
         ) : (
@@ -253,6 +274,24 @@ export default function CustomerMenuItemCard({ menuItem, viewMode = 'grid' }: Cu
                 </button>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        {onAskAI && (
+          <div className="mb-3">
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onAskAI(menuItem)
+              }}
+              className="w-full px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center space-x-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+              <span>Ask AI About This Dish</span>
+            </button>
           </div>
         )}
 

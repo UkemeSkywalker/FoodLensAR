@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createPublicClient, createServerClient } from '@/lib/supabase'
+import { createPublicClient, createServiceRoleClient } from '@/lib/supabase'
 
 // GET /api/test-supabase - Test Supabase configuration
 export async function GET() {
@@ -10,7 +10,7 @@ export async function GET() {
         supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? 'Set' : 'Missing',
         supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY ? 'Set' : 'Missing'
       },
-      tests: {}
+      tests: {} as Record<string, string>
     }
 
     // Test public client
@@ -28,7 +28,7 @@ export async function GET() {
 
     // Test server client (if service key is available)
     try {
-      const serverClient = createServerClient()
+      const serverClient = createServiceRoleClient()
       const { data, error } = await serverClient
         .from('restaurants')
         .select('count')
