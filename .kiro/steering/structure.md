@@ -8,6 +8,7 @@ src/
 │   ├── api/               # API routes
 │   │   ├── auth/          # Authentication endpoints
 │   │   ├── restaurants/   # Restaurant management (includes QR code generation)
+│   │   ├── ai/            # AI query endpoints (Lambda integration)
 │   │   ├── health/        # Health check endpoints
 │   │   └── setup-database/ # Database utilities
 │   ├── auth/              # Authentication pages
@@ -19,6 +20,24 @@ src/
 ├── lib/                   # Library configurations
 ├── types/                 # TypeScript type definitions
 └── utils/                 # Utility functions
+
+lambda/                     # AWS Lambda Strands Agent Service
+├── agent_handler.py       # Main Lambda handler
+├── tools/                 # Custom Strands Agent tools
+│   ├── __init__.py
+│   ├── dish_info.py      # Menu item information tool
+│   ├── nutrition_lookup.py # USDA nutrition API tool
+│   └── dietary_advice.py  # Dietary guidance tool
+├── requirements.txt       # Python dependencies
+├── config.py             # Configuration and constants
+└── package_for_lambda.py # Lambda packaging script
+
+cdk/                       # AWS CDK Infrastructure
+├── app.py                # CDK app entry point
+├── stacks/
+│   └── lambda_stack.py   # Lambda deployment stack
+├── requirements.txt      # CDK dependencies
+└── cdk.json             # CDK configuration
 ```
 
 ## Naming Conventions
@@ -29,6 +48,8 @@ src/
 - **Components**: PascalCase (e.g., `AuthGuard.tsx`)
 - **Utilities**: camelCase (e.g., `database.ts`)
 - **Types**: Use `index.ts` for exports
+- **Lambda Functions**: snake_case (e.g., `agent_handler.py`)
+- **Python Tools**: snake_case (e.g., `dish_info.py`)
 
 ### Database
 - **Tables**: snake_case (e.g., `menu_items`, `restaurants`)
@@ -118,3 +139,55 @@ QR Code Patterns
 - `POST /api/restaurants/qr-code` - Generate new QR code for authenticated restaurant
 - `GET /api/restaurants/qr-code` - Retrieve existing QR code URL
 - Include proper authentication and restaurant ownership validation
+
+## Lambda Service Patterns
+
+### Lambda Function Structure
+```python
+def handler(event, context):
+    try:
+        # 1. Parse event payload
+        # 2. Initialize Strands Agent with tools
+        # 3. Process query with context
+        # 4. Return structured response
+    except Exception as error:
+        print(f'Lambda error: {error}')
+        return {'error': str(error)}
+```
+
+### Custom Tool Implementation
+```python
+from strands_tools import tool
+
+@tool
+async def tool_name(param: str) -> dict:
+    """Tool description for Strands Agent."""
+    # 1. Validate input parameters
+    # 2. Make external API calls if needed
+    # 3. Process and format response
+    # 4. Return structured data
+```
+
+### Lambda Integration from Next.js
+```typescript
+import { LambdaClient, InvokeCommand } from "@aws-sdk/client-lambda";
+
+const lambdaClient = new LambdaClient({ region: process.env.AWS_REGION });
+
+export async function invokeFoodAdvisor(query: string, context: object) {
+  const command = new InvokeCommand({
+    FunctionName: process.env.STRANDS_LAMBDA_FUNCTION_NAME,
+    Payload: JSON.stringify({ prompt: query, context })
+  });
+  
+  const response = await lambdaClient.send(command);
+  return JSON.parse(new TextDecoder().decode(response.Payload));
+}
+```
+
+### Lambda Deployment Patterns
+- Use AWS CDK for infrastructure as code
+- Package dependencies in Lambda layers for reusability
+- Use ARM64 architecture for cost optimization
+- Set appropriate timeout and memory limits
+- Include proper IAM permissions for Bedrock and external APIs

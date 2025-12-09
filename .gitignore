@@ -50,3 +50,38 @@ next-env.d.ts
 **/terraform.tfstate.backup
 **/terraform.tfvars
 **/.terraform.tfstate.lock.info
+
+# AWS Lambda
+lambda/__pycache__/
+lambda/**/__pycache__/
+lambda/*.pyc
+lambda/**/*.pyc
+lambda/deployment-package.zip
+lambda/.pytest_cache/
+lambda/venv/
+lambda/.venv/
+
+# AWS CDK
+cdk/cdk.out/
+cdk/node_modules/
+cdk/.venv/
+cdk/venv/
+cdk/__pycache__/
+cdk/**/__pycache__/
+cdk/*.pyc
+cdk/**/*.pyc
+cdk/.cdk.staging/
+
+# Python virtual environments (general)
+**/venv/
+**/.venv/
+**/env/
+**/.env/
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/

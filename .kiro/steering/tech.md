@@ -18,9 +18,11 @@
 
 ## External Services
 - **Google Nano Banana API** for AI image generation
-- **AWS Strands Agent** for intelligent food advisory
+- **AWS Lambda** with **Strands Agents Python SDK** for intelligent food advisory
+- **AWS Bedrock** for LLM inference (via Strands Agent)
 - **ElevenLabs TTS** for voice synthesis
 - **AWS S3** for image storage (includes QR code images)
+- **USDA FoodData Central API** for nutritional information
 
 ## Development Tools
 - **ESLint** for code linting
@@ -54,10 +56,20 @@ All external service credentials stored in `.env.local` for development:
 - Supabase URL and keys
 - AWS credentials and S3 bucket
 - Google Nano Banana API key
-- AWS Strands Agent endpoint
+- AWS Lambda function name for Strands Agent
+- USDA FoodData Central API key
 - ElevenLabs API key
 
 ## Deployment
-- **AWS App Runner** for production deployment
+- **AWS App Runner** for Next.js application deployment
+- **AWS Lambda** for Strands Agent Python service
+- **AWS CDK** for Lambda infrastructure deployment
 - **CloudWatch** for logging and monitoring
 - **AWS Secrets Manager** for production secrets
+
+## Lambda Service Architecture
+- **Python 3.12** runtime for Strands Agent Lambda
+- **ARM64** architecture for cost optimization
+- **Strands Agents SDK** for AI agent functionality
+- **Custom tools** for dish info, nutrition lookup, and dietary advice
+- **Lambda layers** for dependency management

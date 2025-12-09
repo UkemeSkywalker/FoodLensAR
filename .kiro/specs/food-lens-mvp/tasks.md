@@ -85,23 +85,24 @@
   - Test QR code generation and customer menu access flow
   - _Requirements: 2.5, 3.6, 7.4_
 
-- [ ] 9. Set up AWS Strands Agent infrastructure with testing
+- [x] 9. Set up AWS Lambda Strands Agent service with testing
 
-  - Configure AWS Strands Agent with custom tools
-  - Implement GetDishInfo tool for Supabase integration
-  - Create NutritionLookup tool with USDA API integration
-  - Build dietary advice tool with medical disclaimers
-  - Set up agent response formatting for voice synthesis
-  - Create test endpoints to verify agent tool functionality
-  - Test each agent tool individually with sample data
+  - Create lambda/ directory structure for Python Strands Agent service
+  - Implement agent_handler.py with Strands Agent configuration and system prompt
+  - Create custom tools: get_dish_info, nutrition_lookup, and dietary_advice
+  - Set up requirements.txt with strands-agents SDK and dependencies
+  - Configure Lambda deployment using AWS CDK with proper IAM permissions
+  - Create packaging script for Lambda deployment with ARM64 architecture
+  - Implement API endpoint in Next.js to invoke Lambda function
+  - Test Lambda function locally and verify tool functionality
   - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
 
 - [ ] 10. Implement AI Food Advisor API integration with UI testing
 
-  - Create API route for handling AI queries
-  - Implement request forwarding to AWS Strands Agent
-  - Build response processing and formatting logic
-  - Add error handling for agent failures
+  - Create API route for handling AI queries with Lambda invocation
+  - Implement AWS Lambda client for invoking Strands Agent function
+  - Build request payload formatting with restaurant and dish context
+  - Add response processing and error handling for Lambda failures
   - Integrate dish context passing for targeted queries
   - Create simple test interface for AI queries in dashboard
   - Test AI integration with various query types and visual feedback
