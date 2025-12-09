@@ -1,9 +1,13 @@
 import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js';
 
-// Initialize ElevenLabs client
-const elevenlabs = new ElevenLabsClient({
-  apiKey: process.env.ELEVENLABS_API_KEY,
-});
+// Factory function to create ElevenLabs client
+function createElevenLabsClient(): ElevenLabsClient {
+  const apiKey = process.env.ELEVENLABS_API_KEY;
+  if (!apiKey) {
+    throw new Error('ELEVENLABS_API_KEY environment variable is required');
+  }
+  return new ElevenLabsClient({ apiKey });
+}
 
 // Default voice settings for consistent audio quality
 const DEFAULT_VOICE_SETTINGS = {
@@ -47,6 +51,7 @@ export async function textToSpeech(
 
     console.log('Generating TTS for text:', cleanText.substring(0, 100) + '...');
 
+    const elevenlabs = createElevenLabsClient();
     const audioStream = await elevenlabs.textToSpeech.convert(voiceId, {
       text: cleanText,
       modelId: modelId,
@@ -157,6 +162,7 @@ function cleanTextForTTS(text: string): string {
  */
 export async function getAvailableVoices() {
   try {
+    const elevenlabs = createElevenLabsClient();
     const voices = await elevenlabs.voices.getAll();
     return voices.voices?.map(voice => ({
       id: voice.voiceId || '',

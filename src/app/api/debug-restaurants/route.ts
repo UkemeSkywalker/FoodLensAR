@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase'
+import { createServiceRoleClient } from '@/lib/supabase'
 
 export async function GET() {
   try {
-    const supabase = createServerClient()
+    const supabase = createServiceRoleClient()
     
     // Get all restaurants
     const { data: restaurants, error } = await supabase

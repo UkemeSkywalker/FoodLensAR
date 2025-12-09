@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { googleNanoBananaService, uploadToS3, generateImageKey } from '@/lib'
+import { createGoogleNanoBananaService, uploadToS3, generateImageKey } from '@/lib'
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,7 +22,8 @@ export async function POST(request: NextRequest) {
     console.log('Generating image for:', { itemName, description, cuisine, restaurantId, menuItemId })
 
     // Generate image using Google Nano Banana API
-    const result = await googleNanoBananaService.generateMenuItemImage(
+    const googleService = createGoogleNanoBananaService()
+    const result = await googleService.generateMenuItemImage(
       itemName,
       description,
       cuisine
@@ -69,7 +70,8 @@ export async function POST(request: NextRequest) {
 // Test endpoint
 export async function GET() {
   try {
-    const testResult = await googleNanoBananaService.testConnection()
+    const googleService = createGoogleNanoBananaService()
+    const testResult = await googleService.testConnection()
     
     return NextResponse.json({
       service: 'Google Nano Banana API',

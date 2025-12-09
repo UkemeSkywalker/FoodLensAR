@@ -13,7 +13,7 @@ async function triggerImageGeneration(itemId: string, itemName: string, descript
       .eq('id', itemId)
 
     // Generate image
-    const response = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/api/generate-image`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/generate-image`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

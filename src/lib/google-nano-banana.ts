@@ -123,5 +123,7 @@ export class GoogleNanoBananaService {
   }
 }
 
-// Export a singleton instance
-export const googleNanoBananaService = new GoogleNanoBananaService();
+// Factory function for creating service instances
+export function createGoogleNanoBananaService(): GoogleNanoBananaService {
+  return new GoogleNanoBananaService();
+}

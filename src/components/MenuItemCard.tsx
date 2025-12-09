@@ -67,6 +67,8 @@ export default function MenuItemCard({
             fill
             className="object-cover"
             onError={() => setImageError(true)}
+            unoptimized={true}
+            loading="lazy"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">

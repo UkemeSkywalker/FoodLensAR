@@ -36,7 +36,9 @@ def get_dish_info(dish_id: str, restaurant_id: str) -> Dict[str, Any]:
             }
         
         # Construct API URL for public menu access
-        url = f"{api_endpoint}/api/menu"
+        # Remove trailing /api if present to avoid double /api/api/menu
+        base_url = api_endpoint.rstrip('/api').rstrip('/')
+        url = f"{base_url}/api/menu"
         
         # Make API request to get all menu items for the restaurant
         with httpx.Client(timeout=10.0) as client:

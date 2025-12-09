@@ -61,10 +61,13 @@ export async function POST(_request: NextRequest) {
     }
 
     // Generate customer menu URL
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    // Use APP_URL (runtime) or NEXT_PUBLIC_APP_URL (build-time) or fallback to localhost
+    const baseUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
     const menuUrl = `${baseUrl}/menu/${restaurant.id}`;
 
     console.log('=== QR Code Generation Debug ===');
+    console.log('APP_URL:', process.env.APP_URL);
+    console.log('NEXT_PUBLIC_APP_URL:', process.env.NEXT_PUBLIC_APP_URL);
     console.log('Restaurant ID:', restaurant.id);
     console.log('Menu URL:', menuUrl);
 
@@ -79,9 +82,11 @@ export async function POST(_request: NextRequest) {
       }
     });
 
-    // Upload QR code to S3
-    const s3Key = `qr-codes/${restaurant.id}.png`;
-    const s3Result = await uploadToS3(qrCodeBuffer, s3Key, 'image/png');
+    // Upload QR code to S3 with timestamp to avoid caching issues
+    const timestamp = Date.now();
+    const s3Key = `qr-codes/${restaurant.id}-${timestamp}.png`;
+    // Use no-cache for QR codes so updates are immediately visible
+    const s3Result = await uploadToS3(qrCodeBuffer, s3Key, 'image/png', 'no-cache, no-store, must-revalidate');
 
     console.log('QR Code uploaded to S3:', s3Result);
 
@@ -144,7 +149,8 @@ export async function GET(_request: NextRequest) {
       return NextResponse.json({ error: 'Restaurant not found' }, { status: 404 });
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    // Use APP_URL (runtime) or NEXT_PUBLIC_APP_URL (build-time) or fallback to localhost
+    const baseUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
     const menuUrl = `${baseUrl}/menu/${restaurant.id}`;
 
     return NextResponse.json({

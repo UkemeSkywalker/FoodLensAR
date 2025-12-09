@@ -2,14 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { LambdaClient, InvokeCommand } from '@aws-sdk/client-lambda'
 import { textToSpeech } from '@/lib/elevenlabs'
 
-// Initialize Lambda client
-const lambdaClient = new LambdaClient({
-  region: process.env.AWS_REGION || 'us-east-1',
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
-  }
-})
+// Factory function to create Lambda client
+function createLambdaClient(): LambdaClient {
+  return new LambdaClient({
+    region: process.env.AWS_REGION || 'us-east-1',
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+    }
+  });
+}
 
 interface AIQueryRequest {
   query: string
@@ -56,6 +58,7 @@ export async function POST(request: NextRequest) {
     console.log('Invoking Lambda with payload:', JSON.stringify(lambdaPayload, null, 2))
 
     // Invoke Lambda function
+    const lambdaClient = createLambdaClient();
     const command = new InvokeCommand({
       FunctionName: process.env.STRANDS_LAMBDA_FUNCTION_NAME || 'food-lens-strands-agent',
       Payload: JSON.stringify(lambdaPayload),

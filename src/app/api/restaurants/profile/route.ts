@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedUserFromCookies, getAuthenticatedUser } from '@/lib/auth'
-import { createServerClient } from '@/lib/supabase'
+import { createServiceRoleClient } from '@/lib/supabase'
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const supabase = createServerClient()
+    const supabase = createServiceRoleClient()
 
     // Get restaurant profile
     const { data: restaurant, error } = await supabase
@@ -67,7 +67,7 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    const supabase = createServerClient()
+    const supabase = createServiceRoleClient()
 
     // Update restaurant profile
     const { data: restaurant, error } = await supabase
