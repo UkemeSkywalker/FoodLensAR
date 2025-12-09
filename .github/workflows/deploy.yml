@@ -8,7 +8,7 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  ECR_REPOSITORY: food-lens-mvp
+  ECR_REPOSITORY: food-lens-ai
   APP_RUNNER_SERVICE: food-lens-app-runner
 
 jobs:
