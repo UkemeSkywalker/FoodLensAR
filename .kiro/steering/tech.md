@@ -21,8 +21,15 @@
 - **AWS Lambda** with **Strands Agents Python SDK** for intelligent food advisory
 - **AWS Bedrock** for LLM inference (via Strands Agent)
 - **ElevenLabs TTS** for voice synthesis
-- **AWS S3** for image storage (includes QR code images)
+- **AWS S3** for image storage (includes QR code images and 3D model files)
 - **USDA FoodData Central API** for nutritional information
+
+## AR & 3D Visualization
+- **WebXR Device API** for augmented reality experiences
+- **three.js** (r126+) for 3D rendering and scene management
+- **GLTFLoader** for loading 3D models in GLTF format
+- **Hit testing** for placing 3D models on real-world surfaces
+- Mobile AR support for iOS and Android devices
 
 ## Development Tools
 - **ESLint** for code linting

@@ -14,10 +14,15 @@ src/
 │   ├── auth/              # Authentication pages
 │   ├── dashboard/         # Restaurant dashboard
 │   ├── menu/              # Customer-facing menu pages
+│   ├── ar/                # AR viewer pages
 │   ├── admin/             # Admin utilities
 │   └── page.tsx           # Landing page
 ├── components/            # Reusable React components
+│   ├── ar/                # AR-specific components (ARViewer, ARButton, etc.)
+│   └── ...                # Other components
 ├── lib/                   # Library configurations
+│   ├── webxr.ts          # WebXR initialization and utilities
+│   └── ...                # Other libraries
 ├── types/                 # TypeScript type definitions
 └── utils/                 # Utility functions
 
@@ -57,6 +62,7 @@ cdk/                       # AWS CDK Infrastructure
 - **Primary Keys**: Always `id UUID` with `gen_random_uuid()`
 - **Timestamps**: `created_at` and `updated_at` with timezone
 - **QR Codes**: Store as `qr_code_url TEXT` in restaurants table, pointing to S3 stored images
+- **3D Models**: Store as `model_url TEXT` in menu_items table, pointing to GLTF files in S3
 
 ## Code Patterns
 
@@ -191,3 +197,58 @@ export async function invokeFoodAdvisor(query: string, context: object) {
 - Use ARM64 architecture for cost optimization
 - Set appropriate timeout and memory limits
 - Include proper IAM permissions for Bedrock and external APIs
+
+## AR/WebXR Patterns
+
+### WebXR Session Initialization
+```typescript
+async function initializeAR() {
+  // Check WebXR support
+  if (!navigator.xr) {
+    throw new Error('WebXR not supported');
+  }
+  
+  // Request immersive AR session
+  const session = await navigator.xr.requestSession('immersive-ar', {
+    requiredFeatures: ['hit-test']
+  });
+  
+  return session;
+}
+```
+
+### 3D Model Loading
+- Use GLTFLoader from three.js to load 3D models
+- Store GLTF models in S3 with naming pattern: `models/{menu_item_id}.gltf`
+- Implement fallback placeholder model for items without custom 3D models
+- Default placeholder: `https://immersive-web.github.io/webxr-samples/media/gltf/camp/camp.gltf`
+
+### AR Component Structure
+```typescript
+// AR viewer component should:
+// 1. Initialize WebXR session with hit-test feature
+// 2. Set up three.js scene with lighting
+// 3. Load GLTF model for menu item
+// 4. Implement hit testing for surface placement
+// 5. Handle user tap events to place models
+// 6. Render continuously in animation loop
+```
+
+### AR User Flow
+1. Customer scans QR code → lands on `/menu/[restaurantId]`
+2. Customer views menu items with 2D images
+3. Customer clicks "View in AR" button on menu item
+4. System navigates to `/ar/[menuItemId]` or opens AR modal
+5. WebXR session starts, camera activates
+6. User sees reticle on real-world surfaces
+7. User taps to place 3D food model on surface
+8. User can view model from all angles
+
+### AR Database Schema
+- Add `model_url` column to `menu_items` table for custom 3D models
+- Use TEXT type to store S3 URLs or external GLTF URLs
+- NULL values default to placeholder model
+
+### AR API Endpoints
+- `GET /api/menu/[itemId]/model` - Retrieve 3D model URL for menu item
+- Returns model URL or default placeholder if not set
