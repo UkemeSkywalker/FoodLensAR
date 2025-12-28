@@ -24,6 +24,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/* Variant Launch AR SDK */}
+        <script 
+          src={`https://launchar.app/sdk/v1?key=${process.env.NEXT_PUBLIC_VARIANT_LAUNCH_SDK_KEY}&redirect=true`}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

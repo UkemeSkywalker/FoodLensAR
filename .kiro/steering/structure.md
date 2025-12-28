@@ -200,17 +200,20 @@ export async function invokeFoodAdvisor(query: string, context: object) {
 
 ## AR/WebXR Patterns
 
-### WebXR Session Initialization
+### Variant Launch AR Initialization
 ```typescript
+// Include Variant Launch SDK in head
+// <script src="https://launchar.app/sdk/v1?key=YOUR_SDK_KEY&redirect=true"></script>
+
 async function initializeAR() {
-  // Check WebXR support
+  // Check if WebXR is available (via Variant Launch on iOS, native on Android)
   if (!navigator.xr) {
-    throw new Error('WebXR not supported');
+    throw new Error('AR not supported on this device');
   }
   
-  // Request immersive AR session
+  // Request immersive AR session (works on both iOS and Android via Variant Launch)
   const session = await navigator.xr.requestSession('immersive-ar', {
-    requiredFeatures: ['hit-test']
+    requiredFeatures: ['local', 'anchors', 'dom-overlay', 'hit-test']
   });
   
   return session;
@@ -235,14 +238,17 @@ async function initializeAR() {
 ```
 
 ### AR User Flow
-1. Customer scans QR code → lands on `/menu/[restaurantId]`
-2. Customer views menu items with 2D images
-3. Customer clicks "View in AR" button on menu item
-4. System navigates to `/ar/[menuItemId]` or opens AR modal
-5. WebXR session starts, camera activates
-6. User sees reticle on real-world surfaces
-7. User taps to place 3D food model on surface
-8. User can view model from all angles
+1. Customer scans QR code → **Variant Launch handles iOS/Android differences**
+2. **iOS**: App Clip downloads seamlessly, opens AR-enabled browser
+3. **Android**: Direct WebXR support in Chrome
+4. Customer lands on `/menu/[restaurantId]` with AR capability
+5. Customer views menu items with 2D images
+6. Customer clicks "View in AR" button on menu item
+7. System navigates to `/ar/[menuItemId]` 
+8. AR session starts immediately (no permission prompts needed)
+9. User sees reticle on real-world surfaces
+10. User taps to place 3D food model on surface
+11. User can view model from all angles
 
 ### AR Database Schema
 - Add `model_url` column to `menu_items` table for custom 3D models

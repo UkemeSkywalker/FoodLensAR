@@ -1,4 +1,4 @@
-import { createBrowserClient } from '@supabase/ssr'
+import { createBrowserClient, createServerClient } from '@supabase/ssr'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -11,12 +11,18 @@ if (!supabaseUrl || !supabaseAnonKey) {
 export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
   cookies: {
     getAll() {
+      if (typeof document === 'undefined') {
+        return []
+      }
       return document.cookie.split(';').map(cookie => {
         const [name, ...rest] = cookie.trim().split('=')
         return { name, value: rest.join('=') }
       })
     },
     setAll(cookiesToSet) {
+      if (typeof document === 'undefined') {
+        return
+      }
       cookiesToSet.forEach(({ name, value, options }) => {
         let cookie = `${name}=${value}`
         if (options?.maxAge) cookie += `; max-age=${options.maxAge}`
@@ -32,24 +38,14 @@ export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
 
 // Client for public server-side operations (uses anon key for public access)
 export const createPublicClient = () => {
+  // For server-side, we'll use a simpler approach without cookies
   return createBrowserClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
       getAll() {
-        return document.cookie.split(';').map(cookie => {
-          const [name, ...rest] = cookie.trim().split('=')
-          return { name, value: rest.join('=') }
-        })
+        return []
       },
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value, options }) => {
-          let cookie = `${name}=${value}`
-          if (options?.maxAge) cookie += `; max-age=${options.maxAge}`
-          if (options?.path) cookie += `; path=${options.path}`
-          if (options?.domain) cookie += `; domain=${options.domain}`
-          if (options?.sameSite) cookie += `; samesite=${options.sameSite}`
-          if (options?.secure) cookie += '; secure'
-          document.cookie = cookie
-        })
+      setAll() {
+        // No-op for server-side
       }
     }
   })
@@ -64,21 +60,10 @@ export const createServiceRoleClient = () => {
   return createBrowserClient(supabaseUrl, serviceRoleKey, {
     cookies: {
       getAll() {
-        return document.cookie.split(';').map(cookie => {
-          const [name, ...rest] = cookie.trim().split('=')
-          return { name, value: rest.join('=') }
-        })
+        return []
       },
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value, options }) => {
-          let cookie = `${name}=${value}`
-          if (options?.maxAge) cookie += `; max-age=${options.maxAge}`
-          if (options?.path) cookie += `; path=${options.path}`
-          if (options?.domain) cookie += `; domain=${options.domain}`
-          if (options?.sameSite) cookie += `; samesite=${options.sameSite}`
-          if (options?.secure) cookie += '; secure'
-          document.cookie = cookie
-        })
+      setAll() {
+        // No-op for server-side
       }
     }
   })
