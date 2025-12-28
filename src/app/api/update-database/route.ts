@@ -32,6 +32,30 @@ export async function POST() {
       }
     }
 
+    // Add model_url field to menu_items table for AR 3D models
+    const { data: modelData, error: modelUrlError } = await supabaseAdmin
+      .from('menu_items')
+      .select('model_url')
+      .limit(1)
+
+    let modelUrlFieldExists = true
+    if (modelUrlError && modelUrlError.message.includes('column "model_url" does not exist')) {
+      modelUrlFieldExists = false
+      console.log('Model URL field does not exist, adding it...')
+      
+      // Use raw SQL to add the column
+      const { error: alterError } = await supabaseAdmin.rpc('exec_sql', {
+        sql: 'ALTER TABLE menu_items ADD COLUMN model_url TEXT;'
+      })
+      
+      if (alterError) {
+        console.error('Error adding model URL field:', alterError)
+      } else {
+        console.log('Model URL field added successfully')
+        modelUrlFieldExists = true
+      }
+    }
+
     // Create index for QR code URL
     const { error: indexError } = await supabaseAdmin.rpc('exec_sql', {
       sql: 'CREATE INDEX IF NOT EXISTS idx_restaurants_qr_code_url ON restaurants(qr_code_url);'
@@ -41,6 +65,17 @@ export async function POST() {
       console.error('QR code index creation error:', indexError)
     } else {
       console.log('QR code index created successfully')
+    }
+
+    // Create index for model URL
+    const { error: modelIndexError } = await supabaseAdmin.rpc('exec_sql', {
+      sql: 'CREATE INDEX IF NOT EXISTS idx_menu_items_model_url ON menu_items(model_url);'
+    })
+
+    if (modelIndexError) {
+      console.error('Model URL index creation error:', modelIndexError)
+    } else {
+      console.log('Model URL index created successfully')
     }
 
     // Disable RLS for development
@@ -59,10 +94,13 @@ export async function POST() {
     }
 
     return NextResponse.json({
-      message: 'Database updated successfully - QR code field added, RLS disabled for development',
+      message: 'Database updated successfully - QR code field and model URL field added, RLS disabled for development',
       qrCodeFieldExists,
       qrCodeFieldAdded: !qrCodeError,
+      modelUrlFieldExists,
+      modelUrlFieldAdded: !modelUrlError,
       indexCreated: !indexError,
+      modelIndexCreated: !modelIndexError,
       rlsDisabled: !rlsError1 && !rlsError2
     })
 

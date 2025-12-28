@@ -10,3 +10,6 @@ export { default as MenuSkeleton } from './MenuSkeleton'
 export { default as ImageModal } from './ImageModal'
 export { default as AudioPlayer } from './AudioPlayer'
 export { default as ChatInterface } from './ChatInterface'
+
+// AR Components
+export { default as ARViewer } from './ar/ARViewer'

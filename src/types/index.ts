@@ -18,6 +18,7 @@ export interface MenuItem {
   description?: string;
   cuisine?: string;
   image_url?: string;
+  model_url?: string | null;
   image_generation_status: 'pending' | 'generating' | 'completed' | 'failed';
   created_at: string;
   updated_at: string;
